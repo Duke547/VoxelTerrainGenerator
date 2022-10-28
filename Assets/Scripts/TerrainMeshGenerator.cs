@@ -3,24 +3,42 @@ using UnityEngine;
 
 public static class TerrainMeshGenerator
 {
-    static Mesh LoadMesh(BlockType[,,] terrain, Vector3Int location)
+    static CombineInstance GenerateBlockFace(Vector3[] vertices, Vector3 origin, Vector3 direction)
     {
-        var block = terrain[location.x, location.y, location.z];
+        CombineInstance face = new CombineInstance();
+        Mesh            mesh = new Mesh();
 
-        return Resources.Load<Mesh>("Meshes/Blocks/" + block.MeshName);
+        mesh.SetVertices(new[] { vertices[0], vertices[1], vertices[2], vertices[3] });
+        mesh.SetIndices (new[] { 0, 1, 2, 2, 3, 0 }, MeshTopology.Triangles, 0);
+        mesh.SetNormals (new[] { direction, direction, direction, direction } );
+
+        face.mesh      = mesh;
+        face.transform = Matrix4x4.Translate(origin);
+
+        return face;
     }
 
-    static void GenerateBlock(BlockType[,,] terrain, Vector3Int location, List<CombineInstance> blocks)
+    static CombineInstance[] GenerateBlock(Vector3 location)
     {
-        var mesh = LoadMesh(terrain, location);
+        List<CombineInstance> faces = new List<CombineInstance>();
 
-        var block = new CombineInstance
-        {
-            mesh      = mesh,
-            transform = Matrix4x4.Translate(location)
-        };
+        var v1 = new Vector3(-0.5f, -0.5f, -0.5f);
+        var v2 = new Vector3( 0.5f, -0.5f, -0.5f);
+        var v3 = new Vector3( 0.5f, -0.5f,  0.5f);
+        var v4 = new Vector3(-0.5f, -0.5f,  0.5f);
+        var v5 = new Vector3(-0.5f,  0.5f, -0.5f);
+        var v6 = new Vector3( 0.5f,  0.5f, -0.5f);
+        var v7 = new Vector3( 0.5f,  0.5f,  0.5f);
+        var v8 = new Vector3(-0.5f,  0.5f,  0.5f);
 
-        blocks.Add(block);
+        faces.Add(GenerateBlockFace(new[] { v8, v7, v6, v5 }, location, Vector3.up));
+        faces.Add(GenerateBlockFace(new[] { v1, v2, v3, v4 }, location, Vector3.down));
+        faces.Add(GenerateBlockFace(new[] { v1, v4, v8, v5 }, location, Vector3.left));
+        faces.Add(GenerateBlockFace(new[] { v6, v7, v3, v2 }, location, Vector3.right));
+        faces.Add(GenerateBlockFace(new[] { v7, v8, v4, v3 }, location, Vector3.forward));
+        faces.Add(GenerateBlockFace(new[] { v5, v6, v2, v1 }, location, Vector3.back));
+
+        return faces.ToArray();
     }
 
     static CombineInstance[] GenerateBlocks(BlockType[,,] terrain)
@@ -34,7 +52,7 @@ public static class TerrainMeshGenerator
                 for (int x = 0; x < terrain.GetLength(0); x++)
                 {
                     if (terrain[x, y, z].IsSolid)
-                        GenerateBlock(terrain, new(x, y, z), blocks);
+                        blocks.AddRange(GenerateBlock(new(x, y, z)));
                 }
             }
         }
