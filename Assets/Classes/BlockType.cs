@@ -4,12 +4,9 @@ public record BlockType
 
     public bool IsSolid { get; }
 
-    public string MeshName { get; }
-
-    public BlockType(string name, bool isSolid, string mesh)
+    public BlockType(string name, bool isSolid)
     {
         Name    = name;
         IsSolid = isSolid;
-        MeshName    = mesh;
     }
 }
