@@ -1,12 +1,28 @@
-public record BlockType
+using Unity.Profiling;
+
+namespace VoxelWorld.Classes
 {
-    public string Name { get; }
-
-    public bool IsSolid { get; }
-
-    public BlockType(string name, bool isSolid)
+    public record BlockType
     {
-        Name    = name;
-        IsSolid = isSolid;
+        public string Name { get; }
+    
+        public bool IsSolid { get; }
+    
+        public BlockType(string name, bool isSolid)
+        {
+            Name    = name;
+            IsSolid = isSolid;
+        }
+
+        public static BlockType GetType(BlockID id)
+        {
+            using (new ProfilerMarker("TerrainLoader.GenerateBlockFace").Auto())
+            {
+                if (id == BlockID.Dirt)
+                    return new("Dirt", true);
+
+                return new("Air", false);
+            }
+        }
     }
 }

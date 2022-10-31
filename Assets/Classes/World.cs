@@ -1,47 +1,70 @@
-﻿using UnityEngine;
+﻿using Unity.Profiling;
+using UnityEngine;
 
-public class World
+namespace VoxelWorld.Classes
 {
-    public BlockType[,,] Terrain { get; }
-
-    public int Width => Terrain.GetLength(0);
-
-    public int Length => Terrain.GetLength(2);
-
-    public int Height => Terrain.GetLength(1);
-
-    public BlockType GetBlock(Vector3Int location)
+    public class World
     {
-        if (location.x < 0 || location.x >= Width)
-            return null;
+        public BlockID[,,] Blocks { get; }
 
-        if (location.y < 0 || location.y >= Height)
-            return null;
-
-        if (location.z < 0 || location.z >= Length)
-            return null;
-
-        return Terrain[location.x, location.y, location.z];
-    }
-
-    void InitializeTerrain()
-    {
-        for (int z = 0; z < Length; z++)
+        public BlockID this[int x, int y, int z]
         {
-            for (int y = 0; y < Height; y++)
+            get => Blocks[x, y, z];
+            set => Blocks[x, y, z] = value;
+        }
+
+        public int Width => Blocks.GetLength(0);
+
+        public int Length => Blocks.GetLength(2);
+
+        public int Height => Blocks.GetLength(1);
+
+        public Vector3 PlayerSpawn { get; set; }
+
+        public BlockType GetBlock(Vector3Int location)
+        {
+            using (new ProfilerMarker("World.GetBlock").Auto())
             {
-                for (int x = 0; x < Width; x++)
-                {
-                    Terrain[x, y, z] = BlockTypes.Air;
-                }
+                if (location.x < 0 || location.x >= Width)
+                    return null;
+
+                if (location.y < 0 || location.y >= Height)
+                    return null;
+
+                if (location.z < 0 || location.z >= Length)
+                    return null;
+
+                return BlockType.GetType(Blocks[location.x, location.y, location.z]);
             }
         }
-    }
 
-    public World(int width, int length, int height)
-    {
-        Terrain = new BlockType[width, height, length];
+        public BlockType GetBlock(int x, int y, int z)
+            => GetBlock(new(x, y, z));
 
-        InitializeTerrain();
+        public Vector3 FindSurface(int x, int z)
+        {
+            using (new ProfilerMarker("World.FindSurface").Auto())
+            {
+                var last = new Vector3Int(x, Height - 1, z);
+
+                for (int y = last.y; y >= 0; y--)
+                {
+                    if (!GetBlock(x, y, z).IsSolid)
+                        last = new(x, y, z);
+                    else
+                        break;
+                }
+
+                return last;
+            }
+        }
+
+        public World(int size) =>
+            Blocks = new BlockID[size, 100, size];
+
+        public World(BlockID[,,] blocks) =>
+            Blocks = blocks;
+
+        public World() : this(0) { }
     }
 }

@@ -1,17 +1,32 @@
-public static class TerrainGenerator
+using UnityEngine.Rendering;
+using UnityEngine;
+
+using static System.Math;
+
+namespace VoxelWorld.Classes
 {
-    public static void Generate(World world)
+    public static class TerrainGenerator
     {
-        for (int z = 0; z < world.Length; z++)
+        public static GameObject GenerateChunk(World world, RectInt rect)
         {
-            for (int y = 0; y < world.Height; y++)
-            {
-                for (int x = 0; x < world.Width; x++)
-                {
-                    if (y <= world.Height / 2)
-                        world.Terrain[x, y, z] = BlockTypes.Dirt;
-                }
-            }
+            rect.x      = Max(rect.x, 0);
+            rect.y      = Max(rect.y, 0);
+            rect.width  = Min(rect.width, world.Width  - rect.x);
+            rect.height = Min(rect.height, world.Length - rect.y);
+
+            var chunk        = new GameObject("Terrain Chunk") { tag = "Terrain Chunk" };
+            var meshFilter   = chunk.AddComponent<MeshFilter>();
+            var meshRenderer = chunk.AddComponent<MeshRenderer>();
+            var collider     = chunk.AddComponent<MeshCollider>();
+            var mesh         = TerrainMeshGenerator.GenerateChunkMesh(world, rect);
+
+            meshRenderer.shadowCastingMode = ShadowCastingMode.TwoSided;
+            meshRenderer.material          = Resources.Load<Material>("Materials/Terrain");
+
+            meshFilter.mesh     = mesh;
+            collider.sharedMesh = mesh;
+
+            return chunk;
         }
     }
 }
