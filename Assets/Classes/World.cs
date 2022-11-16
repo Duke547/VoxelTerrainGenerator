@@ -59,6 +59,9 @@ namespace VoxelWorld.Classes
             }
         }
 
+        public BlockType FindSurfaceBlock(int x, int y)
+            => GetBlock(Vector3Int.RoundToInt(FindSurface(x, y)));
+
         public World(int size) =>
             Blocks = new BlockID[size, 100, size];
 

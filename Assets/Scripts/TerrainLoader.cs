@@ -28,9 +28,9 @@ namespace VoxelWorld.Scripts
 
         public World World { get; set; }
 
-        public int ChunkSize = 50;
+        public int ChunkSize = 10;
 
-        public int ChunkCount = 2;
+        public int ChunkCount = 8;
 
         Vector2Int GetChunkIndexAt(Vector3 location)
         {

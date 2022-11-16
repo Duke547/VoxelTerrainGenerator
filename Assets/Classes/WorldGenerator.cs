@@ -1,16 +1,13 @@
 using Unity.Profiling;
 using UnityEngine;
-using VoxelWorld.Classes;
 
-namespace VoxelWorld.Scripts
+namespace VoxelWorld.Classes
 {
-    public class DefaultWorldGenerator : WorldGenerator
+    public static class WorldGenerator
     {
-        public int Size = 20;
-
         static float[,] GenerateSurfaceData(int size)
         {
-            using (new ProfilerMarker("TerrainLoader.GenerateSurfaceData").Auto())
+            using (new ProfilerMarker($"{nameof(WorldGenerator)}.{nameof(GenerateSurfaceData)}").Auto())
             {
                 var data = new float[size, size];
 
@@ -26,12 +23,12 @@ namespace VoxelWorld.Scripts
             }
         }
 
-        protected override World Generate()
+        public static World Generate(int size)
         {
-            using (new ProfilerMarker("DefaultWorldGenerator.Generate").Auto())
+            using (new ProfilerMarker($"{nameof(WorldGenerator)}.{nameof(Generate)}").Auto())
             {
-                var world = new World(Size);
-                var surface = GenerateSurfaceData(Size);
+                var world = new World(size);
+                var surface = GenerateSurfaceData(size);
 
                 for (var z = 0; z < world.Length; z++)
                 {
@@ -45,7 +42,7 @@ namespace VoxelWorld.Scripts
                     }
                 }
 
-                world.PlayerSpawn = world.FindSurface(Size/2, Size/2) + Vector3.up * 3;
+                world.PlayerSpawn = world.FindSurface(size/2, size/2) + Vector3.up * 3;
 
                 return world;
             }
