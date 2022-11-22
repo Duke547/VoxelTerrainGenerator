@@ -10,20 +10,6 @@ namespace VoxelWorld.Classes
 {
     public static class TerrainMeshGenerator
     {
-        static void ApplyAmbientOcclusion(World world, Vertex vertex, Vector3Int origin, Vector3[] directions)
-        {
-            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.ApplyAmbientOcclusion").Auto())
-            {
-                foreach (var direction in directions)
-                {
-                    var adjacent = world.GetBlock(Vector3Int.RoundToInt(origin + direction));
-
-                    if (adjacent != null && adjacent.IsSolid)
-                        vertex.Color = grey;
-                }
-            }
-        }
-
         static void GenerateBlockFace(Mesh mesh, Vertex v1, Vertex v2, Vertex v3, Vertex v4, Vector3 direction)
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateBlockFace").Auto())
@@ -70,26 +56,12 @@ namespace VoxelWorld.Classes
                 var vLeftBackTop      = new Vertex(vLeftFrontTop     + back);
                 var vRightBackTop     = new Vertex(vLeftBackTop      + right);
 
-                var faces = 0;
-
-                if (TryGenerateBlockFace(world, mesh, vRightBackBottom, vRightFrontBottom, vLeftFrontBottom,  vLeftBackBottom,   location, down))    faces++;
-                if (TryGenerateBlockFace(world, mesh, vRightBackTop,    vLeftBackTop,      vLeftFrontTop,     vRightFrontTop,    location, up))      faces++;
-                if (TryGenerateBlockFace(world, mesh, vRightFrontTop,   vLeftFrontTop,     vLeftFrontBottom,  vRightFrontBottom, location, forward)) faces++;
-                if (TryGenerateBlockFace(world, mesh, vRightBackTop,    vRightBackBottom,  vLeftBackBottom,   vLeftBackTop,      location, back))    faces++;
-                if (TryGenerateBlockFace(world, mesh, vLeftFrontTop,    vLeftBackTop,      vLeftBackBottom,   vLeftFrontBottom,  location, left))    faces++;
-                if (TryGenerateBlockFace(world, mesh, vRightBackTop,    vRightFrontTop,    vRightFrontBottom, vRightBackBottom,  location, right))   faces++;
-
-                if (faces > 0)
-                {
-                    ApplyAmbientOcclusion(world, vRightBackBottom,  location, new[] { right+down, back+down,    right+back+down });
-                    ApplyAmbientOcclusion(world, vLeftBackBottom,   location, new[] { left+down,  back+down,    left+back+down });
-                    ApplyAmbientOcclusion(world, vLeftFrontBottom,  location, new[] { left+down,  forward+down, left+forward+down });
-                    ApplyAmbientOcclusion(world, vRightFrontBottom, location, new[] { right+down, forward+down, right+forward+down });
-                    ApplyAmbientOcclusion(world, vRightFrontTop,    location, new[] { right+up,   forward+up,   right+forward+up });
-                    ApplyAmbientOcclusion(world, vLeftFrontTop,     location, new[] { left+up,    forward+up,   left+forward+up });
-                    ApplyAmbientOcclusion(world, vLeftBackTop,      location, new[] { left+up,    back+up,      left+back+up });
-                    ApplyAmbientOcclusion(world, vRightBackTop,     location, new[] { right+up,   back+up,      right+back+up });
-                }
+                TryGenerateBlockFace(world, mesh, vRightBackBottom, vRightFrontBottom, vLeftFrontBottom,  vLeftBackBottom,   location, down   );
+                TryGenerateBlockFace(world, mesh, vRightBackTop,    vLeftBackTop,      vLeftFrontTop,     vRightFrontTop,    location, up     );
+                TryGenerateBlockFace(world, mesh, vRightFrontTop,   vLeftFrontTop,     vLeftFrontBottom,  vRightFrontBottom, location, forward);
+                TryGenerateBlockFace(world, mesh, vRightBackTop,    vRightBackBottom,  vLeftBackBottom,   vLeftBackTop,      location, back   );
+                TryGenerateBlockFace(world, mesh, vLeftFrontTop,    vLeftBackTop,      vLeftBackBottom,   vLeftFrontBottom,  location, left   );
+                TryGenerateBlockFace(world, mesh, vRightBackTop,    vRightFrontTop,    vRightFrontBottom, vRightBackBottom,  location, right  );
             }
         }
 
