@@ -12,7 +12,7 @@ namespace VoxelWorld.Classes
     {
         static void ApplyAmbientOcclusion(World world, Vertex vertex, Vector3Int origin, Vector3[] directions)
         {
-            using (new ProfilerMarker("TerrainMeshGenerator.ApplyAmbientOcclusion").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.ApplyAmbientOcclusion").Auto())
             {
                 foreach (var direction in directions)
                 {
@@ -26,7 +26,7 @@ namespace VoxelWorld.Classes
 
         static void GenerateBlockFace(Mesh mesh, Vertex v1, Vertex v2, Vertex v3, Vertex v4, Vector3 direction)
         {
-            using (new ProfilerMarker("TerrainLoader.GenerateBlockFace").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateBlockFace").Auto())
             {
                 int i1 = mesh.Vertices.Count;
                 int i2 = i1 + 1;
@@ -42,21 +42,24 @@ namespace VoxelWorld.Classes
 
         static bool TryGenerateBlockFace(World world, Mesh mesh, Vertex v1, Vertex v2, Vertex v3, Vertex v4, Vector3Int origin, Vector3 direction)
         {
-            var adjacent = world.GetBlock(Vector3Int.RoundToInt(origin + direction));
-
-            if (adjacent != null && !adjacent.IsSolid)
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.TryGenerateBlockFace").Auto())
             {
-                GenerateBlockFace(mesh, v1, v2, v3, v4, direction);
+                var adjacent = world.GetBlock(Vector3Int.RoundToInt(origin + direction));
+                
+                if (adjacent != null && !adjacent.IsSolid)
+                {
+                    GenerateBlockFace(mesh, v1, v2, v3, v4, direction);
 
-                return true;
+                    return true;
+                }
+
+                return false;
             }
-
-            return false;
         }
 
         static void GenerateBlock(World world, Mesh mesh, Vector3Int location)
         {
-            using (new ProfilerMarker("TerrainLoader.GenerateBlock").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateBlock").Auto())
             {
                 var vRightBackBottom  = new Vertex(location);
                 var vLeftBackBottom   = new Vertex(vRightBackBottom  + left);
@@ -69,7 +72,7 @@ namespace VoxelWorld.Classes
 
                 var faces = 0;
 
-                if (TryGenerateBlockFace(world, mesh, vRightBackBottom, vRightFrontBottom, vLeftFrontBottom, vLeftBackBottom, location, down))       faces++;
+                if (TryGenerateBlockFace(world, mesh, vRightBackBottom, vRightFrontBottom, vLeftFrontBottom,  vLeftBackBottom,   location, down))    faces++;
                 if (TryGenerateBlockFace(world, mesh, vRightBackTop,    vLeftBackTop,      vLeftFrontTop,     vRightFrontTop,    location, up))      faces++;
                 if (TryGenerateBlockFace(world, mesh, vRightFrontTop,   vLeftFrontTop,     vLeftFrontBottom,  vRightFrontBottom, location, forward)) faces++;
                 if (TryGenerateBlockFace(world, mesh, vRightBackTop,    vRightBackBottom,  vLeftBackBottom,   vLeftBackTop,      location, back))    faces++;
@@ -92,14 +95,17 @@ namespace VoxelWorld.Classes
 
         static void GenerateChunkBlocks(World world, Mesh mesh, RectInt rect)
         {
-            for (int z = rect.y; z < rect.height + rect.y; z++)
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateChunkBlocks").Auto())
             {
-                for (int y = 0; y < world.Height; y++)
+                for (int z = rect.y; z < rect.height + rect.y; z++)
                 {
-                    for (int x = rect.x; x < rect.width + rect.x; x++)
+                    for (int y = 0; y < world.Height; y++)
                     {
-                        if (BlockType.GetType(world[x, y, z]).IsSolid)
-                            GenerateBlock(world, mesh, new(x, y, z));
+                        for (int x = rect.x; x < rect.width + rect.x; x++)
+                        {
+                            if (BlockType.GetType(world[x, y, z]).IsSolid)
+                                GenerateBlock(world, mesh, new(x, y, z));
+                        }
                     }
                 }
             }
@@ -107,11 +113,14 @@ namespace VoxelWorld.Classes
 
         public static UnityMesh GenerateChunkMesh(World world, RectInt rect)
         {
-            var mesh = new Mesh();
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateChunkMesh").Auto())
+            {
+                var mesh = new Mesh();
 
-            GenerateChunkBlocks(world, mesh, rect);
+                GenerateChunkBlocks(world, mesh, rect);
 
-            return mesh.ToUnityMesh();
+                return mesh.ToUnityMesh();
+            }
         }
     }
 }

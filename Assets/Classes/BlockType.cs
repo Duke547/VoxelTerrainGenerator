@@ -16,13 +16,16 @@ namespace VoxelWorld.Classes
 
         public static BlockType GetType(BlockID id)
         {
-            using (new ProfilerMarker("TerrainLoader.GenerateBlockFace").Auto())
+            using (new ProfilerMarker($"{nameof(BlockType)}.GetType").Auto())
             {
                 if (id == BlockID.Dirt)
-                    return new("Dirt", true);
+                    return Dirt;
 
-                return new("Air", false);
+                return Air;
             }
         }
+
+        public static BlockType Air  = new("Air",  false);
+        public static BlockType Dirt = new("Dirt", true );
     }
 }

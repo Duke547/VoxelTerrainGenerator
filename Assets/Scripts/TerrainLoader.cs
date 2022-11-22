@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Profiling;
 using UnityEngine;
 using VoxelWorld.Classes;
 
@@ -34,56 +35,70 @@ namespace VoxelWorld.Scripts
 
         Vector2Int GetChunkIndexAt(Vector3 location)
         {
-            var x = Max(0, (int)(location.x / ChunkSize));
-            var y = Max(0, (int)(location.z / ChunkSize));
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.LoadChunks").Auto())
+            {
+                var x = Max(0, (int)(location.x / ChunkSize));
+                var y = Max(0, (int)(location.z / ChunkSize));
 
-            return new(x, y);
+                return new(x, y);
+            }
         }
 
         Vector2Int[] GetSurroundingChunkIndices(Vector3 location)
         {
-            var chunks = new List<Vector2Int>();
-
-            var center = GetChunkIndexAt(location);
-            var x      = Max(0,                        center.x - ChunkCount);
-            var y      = Max(0,                        center.y - ChunkCount);
-            var width  = Min(World.Width  / ChunkSize, x + center.x + ChunkCount);
-            var height = Min(World.Length / ChunkSize, y + center.y + ChunkCount);
-
-            for (var yIndex = y; yIndex < height; yIndex++)
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.GetSurroundingChunkIndices").Auto())
             {
-                for (var xIndex = x; xIndex < width; xIndex++)
-                    chunks.Add(new(xIndex, yIndex));
-            }
+                var chunks = new List<Vector2Int>();
 
-            return chunks.ToArray();
+                var center = GetChunkIndexAt(location);
+                var x      = Max(0,                        center.x - ChunkCount);
+                var y      = Max(0,                        center.y - ChunkCount);
+                var width  = Min(World.Width  / ChunkSize, x + center.x + ChunkCount);
+                var height = Min(World.Length / ChunkSize, y + center.y + ChunkCount);
+
+                for (var yIndex = y; yIndex < height; yIndex++)
+                {
+                    for (var xIndex = x; xIndex < width; xIndex++)
+                        chunks.Add(new(xIndex, yIndex));
+                }
+
+                return chunks.ToArray();
+            }
         }
 
-        RectInt GetChunkBounds(Vector2Int index) =>
-            new(index.x * ChunkSize, index.y * ChunkSize, ChunkSize, ChunkSize);
+        RectInt GetChunkBounds(Vector2Int index)
+        {
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.GetChunkBounds").Auto())
+            {
+                return new(index.x * ChunkSize, index.y * ChunkSize, ChunkSize, ChunkSize);
+            }
+        }
 
         public void LoadChunks(Vector3 viewpoint)
         {
-            var chunks    = GetSurroundingChunkIndices(viewpoint);
-            var newChunks = chunks.Where(c => !LoadedChunks.Any(lc => lc.ChunkIndex == c)).ToArray();
-            var oldChunks = LoadedChunks.Where(lc => !chunks.Any(c => c == lc.ChunkIndex)).ToArray();
-
-            foreach (var newChunk in newChunks)
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.LoadChunks").Auto())
             {
-                var chunkBounds = GetChunkBounds(newChunk);
-                var obj         = TerrainGenerator.GenerateChunk(World, chunkBounds);
+                var chunks    = GetSurroundingChunkIndices(viewpoint);
+                var newChunks = chunks.Where(c => !LoadedChunks.Any(lc => lc.ChunkIndex == c)).ToArray();
+                var oldChunks = LoadedChunks.Where(lc => !chunks.Any(c => c == lc.ChunkIndex)).ToArray();
 
-                LoadedChunks.Add(new(newChunk, obj));
+                foreach (var newChunk in newChunks)
+                {
+                    var chunkBounds = GetChunkBounds(newChunk);
+                    var obj         = TerrainGenerator.GenerateChunk(World, chunkBounds);
+
+                    LoadedChunks.Add(new(newChunk, obj));
+                }
+
+                foreach (var oldChunk in oldChunks)
+                {
+                    Destroy(oldChunk.ChunkObject);
+
+                    LoadedChunks.Remove(oldChunk);
+                }
+
+                CurrentChunk = GetChunkIndexAt(viewpoint);
             }
-
-            foreach (var oldChunk in oldChunks)
-            {
-                Destroy(oldChunk.ChunkObject);
-                
-                LoadedChunks.Remove(oldChunk);
-            }
-
-            CurrentChunk = GetChunkIndexAt(viewpoint);
         }
 
         void Update()

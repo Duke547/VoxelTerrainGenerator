@@ -12,10 +12,13 @@ namespace VoxelWorld.Scripts
 
         void SpawnTerrainLoader()
         {
-            var terrainLoader = gameObject.AddComponent<TerrainLoader>();
+            using (new ProfilerMarker($"{nameof(WorldSpawner)}.SpawnTerrainLoader").Auto())
+            {
+                var terrainLoader = gameObject.AddComponent<TerrainLoader>();
 
-            terrainLoader.World = World;
-            terrainLoader.LoadChunks(World.PlayerSpawn);
+                terrainLoader.World = World;
+                terrainLoader.LoadChunks(World.PlayerSpawn);
+            }
         }
 
         void SpawnPlayer()
