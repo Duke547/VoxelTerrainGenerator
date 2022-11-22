@@ -5,21 +5,24 @@ namespace VoxelWorld.Classes
 {
     public class World
     {
-        public BlockID[,,] Blocks { get; }
+        public BlockID[] Blocks { get; }
+
+        public int Width { get; private set; }
+
+        public int Length { get; private set; }
+
+        public int Height { get; private set; }
+
+        public Vector3 PlayerSpawn { get; set; }
+
+        int GetFlattenedBlockIndex(int x, int y, int z)
+            => y * Width * Length + z * Width + x;
 
         public BlockID this[int x, int y, int z]
         {
-            get => Blocks[x, y, z];
-            set => Blocks[x, y, z] = value;
+            get => Blocks[GetFlattenedBlockIndex(x, y, z)];
+            set => Blocks[GetFlattenedBlockIndex(x, y, z)] = value;
         }
-
-        public int Width => Blocks.GetLength(0);
-
-        public int Length => Blocks.GetLength(2);
-
-        public int Height => Blocks.GetLength(1);
-
-        public Vector3 PlayerSpawn { get; set; }
 
         public BlockType GetBlock(Vector3Int location)
         {
@@ -34,7 +37,9 @@ namespace VoxelWorld.Classes
                 if (location.z < 0 || location.z >= Length)
                     return null;
 
-                return BlockType.GetType(Blocks[location.x, location.y, location.z]);
+                var blockID = this[location.x, location.y, location.z];
+
+                return BlockType.GetType(blockID);
             }
         }
 
@@ -62,11 +67,13 @@ namespace VoxelWorld.Classes
         public BlockType FindSurfaceBlock(int x, int y)
             => GetBlock(Vector3Int.RoundToInt(FindSurface(x, y)));
 
-        public World(int size) =>
-            Blocks = new BlockID[size, 100, size];
-
-        public World(BlockID[,,] blocks) =>
-            Blocks = blocks;
+        public World(int size)
+        {
+            Width  = size;
+            Length = size;
+            Height = 100;
+            Blocks = new BlockID[Width * Length * Height];
+        }
 
         public World() : this(0) { }
     }

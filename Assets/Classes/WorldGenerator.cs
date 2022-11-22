@@ -27,7 +27,7 @@ namespace VoxelWorld.Classes
         {
             using (new ProfilerMarker($"{nameof(WorldGenerator)}.{nameof(Generate)}").Auto())
             {
-                var world = new World(size);
+                var world   = new World(size);
                 var surface = GenerateSurfaceData(size);
 
                 for (var z = 0; z < world.Length; z++)
@@ -37,7 +37,7 @@ namespace VoxelWorld.Classes
                         for (var y = 0; y < world.Height; y++)
                         {
                             if (y < surface[x, z] * world.Height)
-                                world.Blocks[x, y, z] = BlockID.Dirt;
+                                world[x, y, z] = BlockID.Dirt;
                         }
                     }
                 }
