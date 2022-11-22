@@ -1,16 +1,13 @@
 using Unity.Profiling;
 using UnityEngine;
 
-using static UnityEngine.Color;
 using static UnityEngine.Vector3;
-
-using UnityMesh = UnityEngine.Mesh;
 
 namespace VoxelWorld.Classes
 {
     public static class TerrainMeshGenerator
     {
-        static void GenerateBlockFace(Mesh mesh, Vertex v1, Vertex v2, Vertex v3, Vertex v4, Vector3 direction)
+        static void GenerateBlockFace(MeshCache mesh, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3 direction)
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateBlockFace").Auto())
             {
@@ -26,7 +23,7 @@ namespace VoxelWorld.Classes
             }
         }
 
-        static bool TryGenerateBlockFace(World world, Mesh mesh, Vertex v1, Vertex v2, Vertex v3, Vertex v4, Vector3Int origin, Vector3 direction)
+        static bool TryGenerateBlockFace(World world, MeshCache mesh, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3Int origin, Vector3 direction)
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.TryGenerateBlockFace").Auto())
             {
@@ -43,18 +40,18 @@ namespace VoxelWorld.Classes
             }
         }
 
-        static void GenerateBlock(World world, Mesh mesh, Vector3Int location)
+        static void GenerateBlock(World world, MeshCache mesh, Vector3Int location)
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateBlock").Auto())
             {
-                var vRightBackBottom  = new Vertex(location);
-                var vLeftBackBottom   = new Vertex(vRightBackBottom  + left);
-                var vLeftFrontBottom  = new Vertex(vLeftBackBottom   + forward);
-                var vRightFrontBottom = new Vertex(vLeftFrontBottom  + right);
-                var vRightFrontTop    = new Vertex(vRightFrontBottom + up);
-                var vLeftFrontTop     = new Vertex(vRightFrontTop    + left);
-                var vLeftBackTop      = new Vertex(vLeftFrontTop     + back);
-                var vRightBackTop     = new Vertex(vLeftBackTop      + right);
+                var vRightBackBottom  = location;
+                var vLeftBackBottom   = vRightBackBottom  + left;
+                var vLeftFrontBottom  = vLeftBackBottom   + forward;
+                var vRightFrontBottom = vLeftFrontBottom  + right;
+                var vRightFrontTop    = vRightFrontBottom + up;
+                var vLeftFrontTop     = vRightFrontTop    + left;
+                var vLeftBackTop      = vLeftFrontTop     + back;
+                var vRightBackTop     = vLeftBackTop      + right;
 
                 TryGenerateBlockFace(world, mesh, vRightBackBottom, vRightFrontBottom, vLeftFrontBottom,  vLeftBackBottom,   location, down   );
                 TryGenerateBlockFace(world, mesh, vRightBackTop,    vLeftBackTop,      vLeftFrontTop,     vRightFrontTop,    location, up     );
@@ -65,7 +62,7 @@ namespace VoxelWorld.Classes
             }
         }
 
-        static void GenerateChunkBlocks(World world, Mesh mesh, RectInt rect)
+        static void GenerateChunkBlocks(World world, MeshCache mesh, RectInt rect)
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateChunkBlocks").Auto())
             {
@@ -83,15 +80,15 @@ namespace VoxelWorld.Classes
             }
         }
 
-        public static UnityMesh GenerateChunkMesh(World world, RectInt rect)
+        public static Mesh GenerateChunkMesh(World world, RectInt rect)
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateChunkMesh").Auto())
             {
-                var mesh = new Mesh();
+                var mesh = new MeshCache();
 
                 GenerateChunkBlocks(world, mesh, rect);
 
-                return mesh.ToUnityMesh();
+                return mesh.ToMesh();
             }
         }
     }
