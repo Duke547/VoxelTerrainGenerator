@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8033928901175976978}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -97,7 +97,7 @@ GameObject:
   - component: {fileID: 638157235468935338}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -148,5 +148,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c260152f0f5f34c40b4fb6f3cd73091f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraSensinitivity: 0.2
-  MaxSpeed: 4
+  maxSpeed: 4
+  cameraSensitivity: 0.2

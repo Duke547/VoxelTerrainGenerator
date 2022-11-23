@@ -51,15 +51,15 @@ namespace VoxelWorld.Scripts
                 var chunks = new List<Vector2Int>();
 
                 var center = GetChunkIndexAt(location);
-                var x      = Max(0,                        center.x - ChunkCount);
-                var y      = Max(0,                        center.y - ChunkCount);
-                var width  = Min(World.Width  / ChunkSize, x + center.x + ChunkCount);
-                var height = Min(World.Length / ChunkSize, y + center.y + ChunkCount);
+                var x      = Max(0, center.x - ChunkCount);
+                var y      = Max(0, center.y - ChunkCount);
+                var width  = Min(ChunkCount * 2, World.Width  / ChunkSize - x);
+                var height = Min(ChunkCount * 2, World.Length / ChunkSize - y);
 
-                for (var yIndex = y; yIndex < height; yIndex++)
+                for (var yIndex = 0; yIndex < height; yIndex++)
                 {
-                    for (var xIndex = x; xIndex < width; xIndex++)
-                        chunks.Add(new(xIndex, yIndex));
+                    for (var xIndex = 0; xIndex < width; xIndex++)
+                        chunks.Add(new(x + xIndex, y + yIndex));
                 }
 
                 return chunks.ToArray();
@@ -103,11 +103,11 @@ namespace VoxelWorld.Scripts
 
         void Update()
         {
-            var camera = FindObjectOfType<Camera>();
+            var player = GameObject.FindWithTag("Player");
 
-            if (camera != null)
+            if (player != null)
             {
-                var viewpoint         = camera.transform.position;
+                var viewpoint         = player.transform.position;
                 var updatedChunkIndex = GetChunkIndexAt(viewpoint);
 
                 if (updatedChunkIndex != CurrentChunk)

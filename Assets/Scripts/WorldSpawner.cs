@@ -4,22 +4,12 @@ using VoxelWorld.Classes;
 
 namespace VoxelWorld.Scripts
 {
+    [RequireComponent(typeof(TerrainLoader))]
     public class WorldSpawner : MonoBehaviour
     {
         public int size = 250;
 
         public World World { get; private set; }
-
-        void SpawnTerrainLoader()
-        {
-            using (new ProfilerMarker($"{nameof(WorldSpawner)}.SpawnTerrainLoader").Auto())
-            {
-                var terrainLoader = gameObject.AddComponent<TerrainLoader>();
-
-                terrainLoader.World = World;
-                terrainLoader.LoadChunks(World.PlayerSpawn);
-            }
-        }
 
         void SpawnPlayer()
         {
@@ -34,8 +24,12 @@ namespace VoxelWorld.Scripts
         void Start()
         {
             World = WorldGenerator.Generate(size);
+            
+            var terrainLoader = GetComponent<TerrainLoader>();
+            terrainLoader.World = World;
+            
+            terrainLoader.LoadChunks(World.PlayerSpawn);
 
-            SpawnTerrainLoader();
             SpawnPlayer();
         }
     }
