@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bead84b6509b78e42afbb1110fddbe5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 80
+  size: 1000
 --- !u!114 &987346724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,4 +182,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ChunkSize: 10
-  ChunkCount: 2
+  ChunkCount: 8
+  SecondsPerChunk: 0.1
