@@ -18,14 +18,14 @@ namespace VoxelWorld.Classes
         {
             using (new ProfilerMarker($"{nameof(BlockType)}.GetType").Auto())
             {
-                if (id == BlockID.Dirt)
-                    return Dirt;
-
-                return Air;
+                return Types[(int)id];
             }
         }
 
-        public static BlockType Air  = new("Air",  false);
-        public static BlockType Dirt = new("Dirt", true );
+        public static readonly BlockType[] Types = new BlockType[]
+        {
+            new ("Air",  false)
+           ,new ("Dirt", true )
+        };
     }
 }
