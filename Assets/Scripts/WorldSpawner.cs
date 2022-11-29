@@ -28,7 +28,7 @@ namespace VoxelWorld.Scripts
             var terrainLoader = GetComponent<TerrainLoader>();
             terrainLoader.World = World;
             
-            terrainLoader.CreateChunk(World.PlayerSpawn);
+            terrainLoader.LoadChunk(World.PlayerSpawn);
 
             SpawnPlayer();
         }

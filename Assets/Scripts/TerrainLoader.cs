@@ -13,12 +13,12 @@ namespace VoxelWorld.Scripts
     {
         public Vector2Int ChunkIndex { get; }
 
-        public GameObject ChunkObject { get; }
+        public GameObject GameObject { get; }
 
         public LoadedChunk(Vector2Int chunkIndex, GameObject chunkObject)
         {
             ChunkIndex  = chunkIndex;
-            ChunkObject = chunkObject;
+            GameObject = chunkObject;
         }
     }
 
@@ -32,15 +32,24 @@ namespace VoxelWorld.Scripts
 
         List<LoadedChunk> LoadedChunks { get; set; } = new();
 
-        List<Vector2Int> ScheduledChunks { get; set; } = new();
-
-        List<Vector2Int> ObsoleteChunks { get; set; } = new();
-
         float SecondsUntilNextChunk { get; set; }
+
+        Vector3? GetCurrentCameraPosition()
+        {
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetCurrentCameraPosition)}").Auto())
+            {
+                var camera = FindObjectOfType<Camera>();
+
+                if (camera != null)
+                    return camera.transform.position;
+                else
+                    return null;
+            }
+        }
 
         Vector2Int GetChunkIndexAt(Vector3 location)
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.LoadChunks").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkIndexAt)}").Auto())
             {
                 var x = Max(0, (int)(location.x / ChunkSize));
                 var y = Max(0, (int)(location.z / ChunkSize));
@@ -51,7 +60,7 @@ namespace VoxelWorld.Scripts
 
         Vector2Int[] GetSurroundingChunkIndices(Vector3 location)
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.GetSurroundingChunkIndices").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetSurroundingChunkIndices)}").Auto())
             {
                 var chunks = new List<Vector2Int>();
 
@@ -73,119 +82,103 @@ namespace VoxelWorld.Scripts
             }
         }
 
-        RectInt GetChunkBounds(Vector2Int index)
+        RectInt GetChunkRect(Vector2Int index)
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.GetChunkBounds").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkRect)}").Auto())
             {
                 return new(index.x * ChunkSize, index.y * ChunkSize, ChunkSize, ChunkSize);
             }
         }
 
-        void CreateChunk(Vector2Int index)
+        bool LoadChunk(Vector2Int chunkIndex)
         {
-            var bounds = GetChunkBounds(index);
-            var obj    = TerrainGenerator.GenerateChunk(World, bounds);
-
-            LoadedChunks.Add(new(index, obj));
-        }
-
-        public void CreateChunk(Vector3 location)
-            => CreateChunk(GetChunkIndexAt(location));
-
-        void ScheduleChunks(Vector3 viewpoint)
-        {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(ScheduleChunks)}").Auto())
+            var loadedIndices = LoadedChunks.Select(lc => lc.ChunkIndex);
+            
+            if (!loadedIndices.Contains(chunkIndex))
             {
-                var current  = GetChunkIndexAt(viewpoint);
+                var rect = GetChunkRect(chunkIndex);
+                var obj  = TerrainGenerator.GenerateChunk(World, rect);
 
-                if (!LoadedChunks.Any(c => c.ChunkIndex == current))
-                    CreateChunk(current);
+                LoadedChunks.Add(new(chunkIndex, obj));
 
-                var desiredChunks   = GetSurroundingChunkIndices(viewpoint);
-                var scheduledChunks = ScheduledChunks.ToArray();
-                var obsoleteChunks  = ObsoleteChunks .ToArray();
-                var loadedChunks    = LoadedChunks   .ToArray();
-
-                foreach (var scheduledChunkIndex in scheduledChunks)
-                {
-                    if (!desiredChunks.Contains(scheduledChunkIndex))
-                        ScheduledChunks.Remove(scheduledChunkIndex);
-                }
-
-                foreach (var obsoleteChunkIndex in obsoleteChunks)
-                {
-                    if (desiredChunks.Contains(obsoleteChunkIndex))
-                        ObsoleteChunks.Remove(obsoleteChunkIndex);
-                }
-
-                foreach (var loadedChunk in loadedChunks)
-                {
-                    if (!desiredChunks.Contains(loadedChunk.ChunkIndex) && !ObsoleteChunks.Contains(loadedChunk.ChunkIndex))
-                        ObsoleteChunks.Add(loadedChunk.ChunkIndex);
-                }
-
-                foreach (var desiredChunkIndex in desiredChunks)
-                {
-                    if (!ScheduledChunks.Contains(desiredChunkIndex) && !LoadedChunks.Any(c => c.ChunkIndex == desiredChunkIndex))
-                        ScheduledChunks.Add(desiredChunkIndex);
-                }
-
-                ScheduledChunks.Remove(current);
+                return true;
             }
+
+            return false;
         }
 
-        void CreateNextScheduledChunk()
+        public bool LoadChunk(Vector3 location)
+            => LoadChunk(GetChunkIndexAt(location));
+
+        void LoadCameraChunk()
         {
-            if (ScheduledChunks.Count > 0)
+            var viewpoint = GetCurrentCameraPosition();
+
+            if (viewpoint.HasValue)
+                LoadChunk(viewpoint.Value);
+        }
+
+        void LoadNextChunk()
+        {
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadNextChunk)}").Auto())
             {
-                CreateChunk(ScheduledChunks[0]);
-                ScheduledChunks.RemoveAt(0);
-            }
-        }
+                var viewpoint = GetCurrentCameraPosition();
 
-        void DestroyChunk(Vector2Int index)
-        {
-            var chunk = LoadedChunks.Find(c => c.ChunkIndex == index);
-
-            Destroy(chunk.ChunkObject);
-
-            LoadedChunks.Remove(chunk);
-        }
-
-        void DestroyObsoleteChunks()
-        {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(DestroyObsoleteChunks)}").Auto())
-            {
-                var chunks = ObsoleteChunks.ToArray();
-
-                foreach (var chunkIndex in chunks)
+                if (viewpoint.HasValue)
                 {
-                    DestroyChunk(chunkIndex);
+                    var desiredChunks = GetSurroundingChunkIndices(viewpoint.Value);
 
-                    ObsoleteChunks.Remove(chunkIndex);
+                    foreach (var desiredChunk in desiredChunks)
+                    {
+                        if (LoadChunk(desiredChunk))
+                            break;
+                    }
                 }
             }
         }
 
-        void Start()
+        void DestroyChunk(LoadedChunk loadedChunk)
         {
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(DestroyChunk)}").Auto())
+            {
+                Destroy(loadedChunk.GameObject);
+
+                LoadedChunks.Remove(loadedChunk);
+            }
+        }
+
+        void UnloadChunks()
+        {
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(UnloadChunks)}").Auto())
+            {
+                var viewpoint = GetCurrentCameraPosition();
+
+                if (viewpoint.HasValue)
+                {
+                    var desiredChunkIndices = GetSurroundingChunkIndices(viewpoint.Value);
+
+                    foreach (var loadedChunk in LoadedChunks.ToArray())
+                    {
+                        if (!desiredChunkIndices.Contains(loadedChunk.ChunkIndex))
+                            DestroyChunk(loadedChunk);
+                    }
+                }
+            }
+        }
+
+        void Start() =>
             SecondsUntilNextChunk = SecondsPerChunk;
-        }
 
         void Update()
         {
             SecondsUntilNextChunk -= Time.deltaTime;
 
-            var player = GameObject.FindWithTag("Player");
-
-            if (player != null)
-                ScheduleChunks(player.transform.position);
-
-            DestroyObsoleteChunks();
+            UnloadChunks();
+            LoadCameraChunk();
 
             if (SecondsUntilNextChunk <= 0)
             {
-                CreateNextScheduledChunk();
+                LoadNextChunk();
 
                 SecondsUntilNextChunk = SecondsPerChunk;
             }
