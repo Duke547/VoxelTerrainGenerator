@@ -9,7 +9,7 @@ namespace VoxelWorld.Classes
     {
         static void GenerateBlockFace(MeshCache mesh, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3 direction)
         {
-            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateBlockFace").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(TryGenerateBlockFace)}").Auto())
             {
                 int i1 = mesh.Vertices.Count;
                 int i2 = i1 + 1;
@@ -25,7 +25,7 @@ namespace VoxelWorld.Classes
 
         static bool TryGenerateBlockFace(World world, MeshCache mesh, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3Int origin, Vector3 direction)
         {
-            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.TryGenerateBlockFace").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(TryGenerateBlockFace)}").Auto())
             {
                 var adjacent = world.GetBlock(Vector3Int.RoundToInt(origin + direction));
                 
@@ -42,7 +42,7 @@ namespace VoxelWorld.Classes
 
         static void GenerateBlock(World world, MeshCache mesh, Vector3Int location)
         {
-            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateBlock").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(GenerateBlock)}").Auto())
             {
                 var vRightBackBottom  = location;
                 var vLeftBackBottom   = vRightBackBottom  + left;
