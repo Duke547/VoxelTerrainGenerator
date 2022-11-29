@@ -34,19 +34,6 @@ namespace VoxelWorld.Scripts
 
         float SecondsUntilNextChunk { get; set; }
 
-        Vector3? GetCurrentCameraPosition()
-        {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetCurrentCameraPosition)}").Auto())
-            {
-                var camera = FindObjectOfType<Camera>();
-
-                if (camera != null)
-                    return camera.transform.position;
-                else
-                    return null;
-            }
-        }
-
         Vector2Int GetChunkIndexAt(Vector3 location)
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkIndexAt)}").Auto())
@@ -90,6 +77,32 @@ namespace VoxelWorld.Scripts
             }
         }
 
+        Bounds GetChunkBounds(Vector2Int chunkIndex)
+        {
+            var chunkRect         = GetChunkRect(chunkIndex);
+            var chunkRectCenter   = chunkRect.center;
+            var chunkBoundsCenter = new Vector3(chunkRectCenter.x, World.Height / 2, chunkRectCenter.y);
+
+            return new Bounds(chunkBoundsCenter, new(chunkRect.width, World.Height, chunkRect.height));
+        }
+
+        bool ChunkInView(Vector2Int chunkIndex)
+        {
+            var camera = FindObjectOfType<Camera>();
+
+            if (camera != null)
+            {
+                var chunkBounds = GetChunkBounds(chunkIndex);
+                var viewPlanes  = GeometryUtility.CalculateFrustumPlanes(camera);
+
+                return GeometryUtility.TestPlanesAABB(viewPlanes, chunkBounds);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         bool LoadChunk(Vector2Int chunkIndex)
         {
             var loadedIndices = LoadedChunks.Select(lc => lc.ChunkIndex);
@@ -112,26 +125,34 @@ namespace VoxelWorld.Scripts
 
         void LoadCameraChunk()
         {
-            var viewpoint = GetCurrentCameraPosition();
+            var camera = FindObjectOfType<Camera>();
 
-            if (viewpoint.HasValue)
-                LoadChunk(viewpoint.Value);
+            if (camera != null)
+            {
+                var viewpoint = camera.transform.position;
+
+                LoadChunk(viewpoint);
+            }
         }
 
         void LoadNextChunk()
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadNextChunk)}").Auto())
             {
-                var viewpoint = GetCurrentCameraPosition();
+                var camera = FindObjectOfType<Camera>();
 
-                if (viewpoint.HasValue)
+                if (camera != null)
                 {
-                    var desiredChunks = GetSurroundingChunkIndices(viewpoint.Value);
+                    var viewpoint            = camera.transform.position;
+                    var desiredChunksIndices = GetSurroundingChunkIndices(viewpoint);
 
-                    foreach (var desiredChunk in desiredChunks)
+                    foreach (var desiredChunkIndex in desiredChunksIndices)
                     {
-                        if (LoadChunk(desiredChunk))
-                            break;
+                        if (ChunkInView(desiredChunkIndex))
+                        {
+                            if (LoadChunk(desiredChunkIndex))
+                                break;
+                        }
                     }
                 }
             }
@@ -151,11 +172,13 @@ namespace VoxelWorld.Scripts
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(UnloadChunks)}").Auto())
             {
-                var viewpoint = GetCurrentCameraPosition();
+                var camera = FindObjectOfType<Camera>();
 
-                if (viewpoint.HasValue)
+                if (camera != null)
                 {
-                    var desiredChunkIndices = GetSurroundingChunkIndices(viewpoint.Value);
+                    var viewpoint = camera.transform.position;
+
+                    var desiredChunkIndices = GetSurroundingChunkIndices(viewpoint);
 
                     foreach (var loadedChunk in LoadedChunks.ToArray())
                     {

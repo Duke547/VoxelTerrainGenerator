@@ -277,4 +277,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChunkSize: 10
   ChunkCount: 8
-  SecondsPerChunk: 0.1
+  SecondsPerChunk: 0
