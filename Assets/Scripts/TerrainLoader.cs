@@ -168,9 +168,9 @@ namespace VoxelWorld.Scripts
             }
         }
 
-        void UnloadChunks()
+        void UnloadNextChunk()
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(UnloadChunks)}").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(UnloadNextChunk)}").Auto())
             {
                 var camera = FindObjectOfType<Camera>();
 
@@ -180,10 +180,15 @@ namespace VoxelWorld.Scripts
 
                     var desiredChunkIndices = GetSurroundingChunkIndices(viewpoint);
 
-                    foreach (var loadedChunk in LoadedChunks.ToArray())
+                    for (var i = 0; i < LoadedChunks.Count; i++)
                     {
+                        var loadedChunk = LoadedChunks[i];
+
                         if (!desiredChunkIndices.Contains(loadedChunk.ChunkIndex))
+                        {
                             DestroyChunk(loadedChunk);
+                            break;
+                        }
                     }
                 }
             }
@@ -196,11 +201,11 @@ namespace VoxelWorld.Scripts
         {
             SecondsUntilNextChunk -= Time.deltaTime;
 
-            UnloadChunks();
             LoadCameraChunk();
 
             if (SecondsUntilNextChunk <= 0)
             {
+                UnloadNextChunk();
                 LoadNextChunk();
 
                 SecondsUntilNextChunk = SecondsPerChunk;
