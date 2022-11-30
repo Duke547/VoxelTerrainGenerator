@@ -1,6 +1,5 @@
 using Unity.Profiling;
 using UnityEngine;
-
 using static UnityEngine.Vector3;
 
 namespace VoxelWorld.Classes
@@ -9,7 +8,7 @@ namespace VoxelWorld.Classes
     {
         static void GenerateBlockFace(MeshCache mesh, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3 direction)
         {
-            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(TryGenerateBlockFace)}").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(GenerateBlockFace)}").Auto())
             {
                 int i1 = mesh.Vertices.Count;
                 int i2 = i1 + 1;
@@ -23,42 +22,66 @@ namespace VoxelWorld.Classes
             }
         }
 
-        static bool TryGenerateBlockFace(World world, MeshCache mesh, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3Int origin, Vector3 direction)
+        static void GetBlockFaceVertices(Vector3Int position, Vector3 axis, out Vector3 v1, out Vector3 v2, out Vector3 v3, out Vector3 v4)
         {
-            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(TryGenerateBlockFace)}").Auto())
+            if (axis == right)
             {
-                var adjacent = world.GetBlock(Vector3Int.RoundToInt(origin + direction));
-                
-                if (adjacent != null && !adjacent.IsSolid)
-                {
-                    GenerateBlockFace(mesh, v1, v2, v3, v4, direction);
+                v1 = position + right;
+                v2 = v1       + back;
+                v3 = v2       + up;
+                v4 = v3       + forward;
+            }
 
-                    return true;
-                }
+            else if (axis == up)
+            {
+                v1 = position + up;
+                v2 = v1       + right;
+                v3 = v2       + back;
+                v4 = v3       + left;
+            }
 
-                return false;
+            else
+            {
+                v1 = position;
+                v2 = v1 + right;
+                v3 = v2 + up;
+                v4 = v3 + left;
             }
         }
 
-        static void GenerateBlock(World world, MeshCache mesh, Vector3Int location)
+        static void TryGenerateAdjacentFace(MeshCache mesh, BlockType first, BlockType second, Vector3Int position, Vector3 axis)
+        {
+            using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(TryGenerateAdjacentFace)}").Auto())
+            {
+                if (first.IsSolid != second.IsSolid)
+                {
+                    GetBlockFaceVertices(position, axis, out var v1, out var v2, out var v3, out var v4);
+
+                    if (first.IsSolid)
+                        GenerateBlockFace(mesh, v1, v2, v3, v4, axis);
+                    else
+                        GenerateBlockFace(mesh, v4, v3, v2, v1, -axis);
+                }
+            }
+        }
+
+        static void GenerateBlock(World world, MeshCache mesh, Vector3Int position)
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(GenerateBlock)}").Auto())
             {
-                var vRightBackBottom  = location;
-                var vLeftBackBottom   = vRightBackBottom  + left;
-                var vLeftFrontBottom  = vLeftBackBottom   + forward;
-                var vRightFrontBottom = vLeftFrontBottom  + right;
-                var vRightFrontTop    = vRightFrontBottom + up;
-                var vLeftFrontTop     = vRightFrontTop    + left;
-                var vLeftBackTop      = vLeftFrontTop     + back;
-                var vRightBackTop     = vLeftBackTop      + right;
+                var current       = world.GetBlock(Vector3Int.RoundToInt(position          ));
+                var rightAdjacent = world.GetBlock(Vector3Int.RoundToInt(position + right  ));
+                var topAdjacent   = world.GetBlock(Vector3Int.RoundToInt(position + up     ));
+                var frontAdjacent = world.GetBlock(Vector3Int.RoundToInt(position + forward));
 
-                TryGenerateBlockFace(world, mesh, vRightBackBottom, vRightFrontBottom, vLeftFrontBottom,  vLeftBackBottom,   location, down   );
-                TryGenerateBlockFace(world, mesh, vRightBackTop,    vLeftBackTop,      vLeftFrontTop,     vRightFrontTop,    location, up     );
-                TryGenerateBlockFace(world, mesh, vRightFrontTop,   vLeftFrontTop,     vLeftFrontBottom,  vRightFrontBottom, location, forward);
-                TryGenerateBlockFace(world, mesh, vRightBackTop,    vRightBackBottom,  vLeftBackBottom,   vLeftBackTop,      location, back   );
-                TryGenerateBlockFace(world, mesh, vLeftFrontTop,    vLeftBackTop,      vLeftBackBottom,   vLeftFrontBottom,  location, left   );
-                TryGenerateBlockFace(world, mesh, vRightBackTop,    vRightFrontTop,    vRightFrontBottom, vRightBackBottom,  location, right  );
+                if (rightAdjacent != null)
+                    TryGenerateAdjacentFace(mesh, current, rightAdjacent, position, right);
+                
+                if (topAdjacent != null)
+                    TryGenerateAdjacentFace(mesh, current, topAdjacent,   position, up);
+
+                if (frontAdjacent != null)
+                    TryGenerateAdjacentFace(mesh, current, frontAdjacent, position, forward);
             }
         }
 
@@ -71,10 +94,7 @@ namespace VoxelWorld.Classes
                     for (int y = 0; y < world.Height; y++)
                     {
                         for (int x = rect.x; x < rect.width + rect.x; x++)
-                        {
-                            if (BlockType.GetType(world[x, y, z]).IsSolid)
-                                GenerateBlock(world, mesh, new(x, y, z));
-                        }
+                            GenerateBlock(world, mesh, new(x, y, z));
                     }
                 }
             }

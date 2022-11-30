@@ -20,24 +20,31 @@ namespace VoxelWorld.Classes
 
         public BlockID this[int x, int y, int z]
         {
-            get => Blocks[GetFlattenedBlockIndex(x, y, z)];
+            get
+            {
+                using (new ProfilerMarker($"{nameof(World)}.Indexer_get").Auto())
+                {
+                    return Blocks[GetFlattenedBlockIndex(x, y, z)];
+                }
+            }
+
             set => Blocks[GetFlattenedBlockIndex(x, y, z)] = value;
         }
 
-        public BlockType GetBlock(Vector3Int location)
+        public BlockType GetBlock(Vector3Int position)
         {
-            using (new ProfilerMarker("World.GetBlock").Auto())
+            using (new ProfilerMarker($"{nameof(World)}.{nameof(GetBlock)}").Auto())
             {
-                if (location.x < 0 || location.x >= Width)
+                if (position.x < 0 || position.x >= Width)
                     return null;
 
-                if (location.y < 0 || location.y >= Height)
+                if (position.y < 0 || position.y >= Height)
                     return null;
 
-                if (location.z < 0 || location.z >= Length)
+                if (position.z < 0 || position.z >= Length)
                     return null;
 
-                var blockID = this[location.x, location.y, location.z];
+                var blockID = this[position.x, position.y, position.z];
 
                 return BlockType.GetType(blockID);
             }
