@@ -24,15 +24,12 @@ namespace VoxelWorld.Scripts
 
     public sealed class TerrainLoader : MonoBehaviour
     {
-        public int   ChunkSize       = 10;
-        public int   ChunkCount      = 8;
-        public float SecondsPerChunk = 1;
+        public int   ChunkSize  = 10;
+        public int   ChunkCount = 8;
 
         public World World { get; set; }
 
         List<LoadedChunk> LoadedChunks { get; set; } = new();
-
-        float SecondsUntilNextChunk { get; set; }
 
         Vector2Int GetChunkIndexAt(Vector3 location)
         {
@@ -123,18 +120,6 @@ namespace VoxelWorld.Scripts
         public bool LoadChunk(Vector3 location)
             => LoadChunk(GetChunkIndexAt(location));
 
-        void LoadCameraChunk()
-        {
-            var camera = FindObjectOfType<Camera>();
-
-            if (camera != null)
-            {
-                var viewpoint = camera.transform.position;
-
-                LoadChunk(viewpoint);
-            }
-        }
-
         void LoadNextChunk()
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadNextChunk)}").Auto())
@@ -194,22 +179,10 @@ namespace VoxelWorld.Scripts
             }
         }
 
-        void Start() =>
-            SecondsUntilNextChunk = SecondsPerChunk;
-
         void Update()
         {
-            SecondsUntilNextChunk -= Time.deltaTime;
-
-            LoadCameraChunk();
-
-            if (SecondsUntilNextChunk <= 0)
-            {
-                UnloadNextChunk();
-                LoadNextChunk();
-
-                SecondsUntilNextChunk = SecondsPerChunk;
-            }
+            UnloadNextChunk();
+            LoadNextChunk();
         }
     }
 }
