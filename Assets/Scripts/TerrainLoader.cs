@@ -9,19 +9,6 @@ using static System.Math;
 
 namespace VoxelWorld.Scripts
 {
-    record LoadedChunk
-    {
-        public Vector2Int ChunkIndex { get; }
-
-        public GameObject GameObject { get; }
-
-        public LoadedChunk(Vector2Int chunkIndex, GameObject chunkObject)
-        {
-            ChunkIndex  = chunkIndex;
-            GameObject = chunkObject;
-        }
-    }
-
     public sealed class TerrainLoader : MonoBehaviour
     {
         public int   ChunkSize  = 10;
@@ -29,7 +16,7 @@ namespace VoxelWorld.Scripts
 
         public World World { get; set; }
 
-        List<LoadedChunk> LoadedChunks { get; set; } = new();
+        List<TerrainChunk> Chunks { get; set; } = new();
 
         Vector2Int GetChunkIndexAt(Vector3 location)
         {
@@ -85,36 +72,47 @@ namespace VoxelWorld.Scripts
 
         bool ChunkInView(Vector2Int chunkIndex)
         {
-            var camera = FindObjectOfType<Camera>();
-
-            if (camera != null)
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(ChunkInView)}").Auto())
             {
-                var chunkBounds = GetChunkBounds(chunkIndex);
-                var viewPlanes  = GeometryUtility.CalculateFrustumPlanes(camera);
+                var camera = FindObjectOfType<Camera>();
 
-                return GeometryUtility.TestPlanesAABB(viewPlanes, chunkBounds);
-            }
-            else
-            {
-                return false;
+                if (camera != null)
+                {
+                    var chunkBounds = GetChunkBounds(chunkIndex);
+                    var viewPlanes  = GeometryUtility.CalculateFrustumPlanes(camera);
+
+                    return GeometryUtility.TestPlanesAABB(viewPlanes, chunkBounds);
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
         bool LoadChunk(Vector2Int chunkIndex)
         {
-            var loadedIndices = LoadedChunks.Select(lc => lc.ChunkIndex);
-            
-            if (!loadedIndices.Contains(chunkIndex))
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadChunk)}").Auto())
             {
-                var rect = GetChunkRect(chunkIndex);
-                var obj  = TerrainGenerator.GenerateChunk(World, rect);
+                var loadedIndices = Chunks.Select(lc => lc.chunkIndex);
 
-                LoadedChunks.Add(new(chunkIndex, obj));
+                if (!loadedIndices.Contains(chunkIndex))
+                {
+                    var rect        = GetChunkRect(chunkIndex);
+                    var chunkObject = new GameObject();
+                    var chunk       = chunkObject.AddComponent<TerrainChunk>();
 
-                return true;
+                    chunk.world      = World;
+                    chunk.rect       = rect;
+                    chunk.chunkIndex = chunkIndex;
+
+                    Chunks.Add(chunk);
+
+                    return true;
+                }
+
+                return false;
             }
-
-            return false;
         }
 
         public bool LoadChunk(Vector3 location)
@@ -143,13 +141,13 @@ namespace VoxelWorld.Scripts
             }
         }
 
-        void DestroyChunk(LoadedChunk loadedChunk)
+        void DestroyChunk(TerrainChunk chunk)
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(DestroyChunk)}").Auto())
             {
-                Destroy(loadedChunk.GameObject);
+                Destroy(chunk.gameObject);
 
-                LoadedChunks.Remove(loadedChunk);
+                Chunks.Remove(chunk);
             }
         }
 
@@ -165,13 +163,13 @@ namespace VoxelWorld.Scripts
 
                     var desiredChunkIndices = GetSurroundingChunkIndices(viewpoint);
 
-                    for (var i = 0; i < LoadedChunks.Count; i++)
+                    for (var i = 0; i < Chunks.Count; i++)
                     {
-                        var loadedChunk = LoadedChunks[i];
+                        var chunk = Chunks[i];
 
-                        if (!desiredChunkIndices.Contains(loadedChunk.ChunkIndex))
+                        if (!desiredChunkIndices.Contains(chunk.chunkIndex) && chunk.loaded)
                         {
-                            DestroyChunk(loadedChunk);
+                            DestroyChunk(chunk);
                             break;
                         }
                     }

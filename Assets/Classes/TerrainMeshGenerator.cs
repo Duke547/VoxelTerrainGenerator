@@ -100,7 +100,7 @@ namespace VoxelWorld.Classes
             }
         }
 
-        public static Mesh GenerateChunkMesh(World world, RectInt rect)
+        public static MeshCache GenerateChunkMesh(World world, RectInt rect)
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.GenerateChunkMesh").Auto())
             {
@@ -108,7 +108,7 @@ namespace VoxelWorld.Classes
 
                 GenerateChunkBlocks(world, mesh, rect);
 
-                return mesh.ToMesh();
+                return mesh;
             }
         }
     }
