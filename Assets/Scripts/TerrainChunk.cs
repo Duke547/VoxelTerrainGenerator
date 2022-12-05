@@ -1,5 +1,5 @@
+using System;
 using System.Threading.Tasks;
-using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Rendering;
 using VoxelWorld.Classes;
@@ -11,9 +11,32 @@ namespace VoxelWorld.Scripts
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
     public class TerrainChunk : MonoBehaviour
     {
-        public World world { get; internal set; }
+        TerrainLoader _terrainLoader;
 
-        public RectInt rect { get; internal set; }
+        internal TerrainLoader terrainLoader
+        {
+            get
+            {
+                if (_terrainLoader == null)
+                    throw new InvalidOperationException("Parent terrain loader no longer exists.");
+
+                return _terrainLoader;
+            }
+            set => _terrainLoader = value;
+        }
+
+        World world
+        {
+            get
+            {
+                var world = terrainLoader.world;
+
+                if (world == null)
+                    throw new InvalidOperationException("Terrain loader does not have a world.");
+
+                return world;
+            }
+        }
 
         public Vector2Int chunkIndex { get; internal set; }
 
@@ -21,6 +44,7 @@ namespace VoxelWorld.Scripts
 
         async Task GenerateMesh()
         {
+            var rect   = terrainLoader.GetChunkRect(chunkIndex);
             var x      = Max(rect.x, 0);
             var y      = Max(rect.y, 0);
             var width  = Min(rect.width,  world.Width  - rect.x);
@@ -30,8 +54,8 @@ namespace VoxelWorld.Scripts
             var meshRenderer = GetComponent<MeshRenderer>();
             var collider     = GetComponent<MeshCollider>();
 
-            var meshCache = await Task.Factory.StartNew(()
-            => TerrainMeshGenerator.GenerateChunkMesh(world, new(x, y, width, length)));
+            var meshCache = await Task.Factory.StartNew(() =>
+                TerrainMeshGenerator.GenerateChunkMesh(world, new(x, y, width, length)));
 
             var mesh = meshCache.ToMesh();
 
@@ -42,11 +66,40 @@ namespace VoxelWorld.Scripts
             collider.sharedMesh = mesh;
         }
 
+        void Remove()
+        {
+            Destroy(gameObject);
+
+            terrainLoader.chunks[chunkIndex.x, chunkIndex.y] = false;
+        }
+
+        void CheckForRemoval()
+        {
+            if (!loaded)
+                return;
+
+            var camera = FindObjectOfType<Camera>();
+
+            if (camera == null)
+                return;
+
+            var cameraPos = camera.transform.position;
+            var maxDist   = terrainLoader.chunkCount * terrainLoader.chunkSize;
+            var distRect  = new RectInt((int)cameraPos.x - maxDist, (int)cameraPos.z - maxDist, maxDist*2, maxDist*2);
+            var chunkRect = terrainLoader.GetChunkRect(chunkIndex);
+
+            if (!distRect.Overlaps(chunkRect))
+                Remove();
+        }
+
         async void Start()
         {
             await GenerateMesh();
 
             loaded = true;
         }
+
+        void Update() =>
+            CheckForRemoval();
     }
 }
