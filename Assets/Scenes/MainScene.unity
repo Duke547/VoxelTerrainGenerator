@@ -275,5 +275,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6cf1007b5cca524cbeb7b81be6146ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ChunkSize: 10
-  ChunkCount: 2
+  chunkSize: 10
+  chunkCount: 8

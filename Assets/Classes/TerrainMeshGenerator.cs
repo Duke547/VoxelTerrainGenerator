@@ -26,7 +26,7 @@ namespace VoxelWorld.Classes
         {
             if (axis == right)
             {
-                v1 = position + right;
+                v1 = position + right * 0.5f + down * 0.5f + forward * 0.5f;
                 v2 = v1       + back;
                 v3 = v2       + up;
                 v4 = v3       + forward;
@@ -34,7 +34,7 @@ namespace VoxelWorld.Classes
 
             else if (axis == up)
             {
-                v1 = position + up;
+                v1 = position + up * 0.5f + left * 0.5f + forward * 0.5f;
                 v2 = v1       + right;
                 v3 = v2       + back;
                 v4 = v3       + left;
@@ -42,7 +42,7 @@ namespace VoxelWorld.Classes
 
             else
             {
-                v1 = position;
+                v1 = position + forward * 0.5f + down * 0.5f + left * 0.5f;
                 v2 = v1 + right;
                 v3 = v2 + up;
                 v4 = v3 + left;
