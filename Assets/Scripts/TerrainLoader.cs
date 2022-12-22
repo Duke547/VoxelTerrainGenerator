@@ -119,7 +119,7 @@ namespace VoxelWorld.Scripts
 
         void Update()
         {
-            if (world != null)
+            if (world != null && Time.frameCount % 10 == 0)
                 LoadNextChunk();
         }
     }
