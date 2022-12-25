@@ -276,4 +276,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkSize: 10
-  chunkCount: 8
+  chunkCount: 2

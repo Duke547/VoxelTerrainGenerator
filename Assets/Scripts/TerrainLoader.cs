@@ -13,91 +13,88 @@ namespace VoxelWorld.Scripts
         public int chunkSize  = 10;
         public int chunkCount = 8;
 
-        internal bool[,] chunks { get; private set; }
+        private List<TerrainChunk> chunks { get; set; } = new List<TerrainChunk>();
 
-        World _world;
+        public World world { get; set; }
 
-        public World world
-        {
-            get => _world;
-            set
-            {
-                _world = value;
-                chunks = new bool[value.Width / chunkSize, value.Length / chunkSize];
-            }
-        }
-
-        public Vector2Int GetChunkIndexAt(Vector3 location)
+        private Vector2Int GetChunkIndexAt(Vector3 position)
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkIndexAt)}").Auto())
             {
-                var x = Max(0, (int)(location.x / chunkSize));
-                var y = Max(0, (int)(location.z / chunkSize));
+                var x = Max(0, (int)(position.x / chunkSize));
+                var y = Max(0, (int)(position.z / chunkSize));
 
                 return new(x, y);
             }
         }
 
-        public Vector2Int[] GetSurroundingChunkIndices(Vector3 location)
+        private WorldChunk GetChunkAt(Vector2Int chunkIndex)
+            => new(world, chunkIndex, chunkSize);
+
+        private WorldChunk GetChunkAt(Vector3 position)
+            => GetChunkAt(GetChunkIndexAt(position));
+
+        private WorldChunk[] GetChunkRegion(Vector3 viewpoint)
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetSurroundingChunkIndices)}").Auto())
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkRegion)}").Auto())
             {
-                var chunks = new List<Vector2Int>();
+                var chunks = new List<WorldChunk>();
 
-                var center = GetChunkIndexAt(location);
-                var x      = Max(0, center.x - chunkCount);
-                var y      = Max(0, center.y - chunkCount);
-                var width  = Min(chunkCount * 2, world.Width  / chunkSize - x);
-                var height = Min(chunkCount * 2, world.Length / chunkSize - y);
+                if (world == null)
+                    return chunks.ToArray();
 
-                for (var yIndex = 0; yIndex < height; yIndex++)
+                var center = GetChunkIndexAt(viewpoint);
+                var start  = center - new Vector2Int(chunkCount,     chunkCount    );
+                var end    = start  + new Vector2Int(chunkCount * 2, chunkCount * 2);
+
+                for (var y = start.y; y < end.y; y++)
                 {
-                    for (var xIndex = 0; xIndex < width; xIndex++)
-                        chunks.Add(new(x + xIndex, y + yIndex));
+                    for (var x = start.x; x < end.x; x++)
+                        chunks.Add(GetChunkAt(new Vector2Int(x, y)));
                 }
 
                 return chunks
-                    .OrderBy(c => Vector2Int.Distance(center, c))
+                    .OrderBy(chunk => Vector2Int.Distance(center, chunk.index))
                     .ToArray();
             }
         }
 
-        public RectInt GetChunkRect(Vector2Int index)
-        {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkRect)}").Auto())
-            {
-                return new(index.x * chunkSize, index.y * chunkSize, chunkSize, chunkSize);
-            }
-        }
-
-        bool LoadChunk(Vector2Int chunkIndex)
+        private bool LoadChunk(WorldChunk chunk)
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadChunk)}").Auto())
             {
-                if (!chunks[chunkIndex.x, chunkIndex.y])
-                {
-                    var rect        = GetChunkRect(chunkIndex);
-                    var chunkObject = new GameObject($"Terrain Chunk {chunkIndex}");
-                    var chunk       = chunkObject.AddComponent<TerrainChunk>();
+                if (chunks.Any(terrainChunk => terrainChunk.worldChunk == chunk))
+                    return false;
 
-                    chunkObject.transform.SetParent(transform);
+                var chunkObject  = new GameObject($"Terrain Chunk {chunk.index}");
+                var terrainChunk = chunkObject.AddComponent<TerrainChunk>();
 
-                    chunk.terrainLoader = this;
-                    chunk.chunkIndex    = chunkIndex;
+                chunkObject.transform.SetParent(transform);
 
-                    chunks[chunkIndex.x, chunkIndex.y] = true;
+                terrainChunk.worldChunk = chunk;
 
-                    return true;
-                }
+                chunks.Add(terrainChunk);
 
-                return false;
+                return true;
             }
         }
 
-        public bool LoadChunk(Vector3 location)
-            => LoadChunk(GetChunkIndexAt(location));
+        public bool LoadChunk(Vector3 position)
+            => LoadChunk(GetChunkAt(position));
 
-        void LoadNextChunk()
+        private bool RemoveChunk(TerrainChunk chunk)
+        {
+            if (!chunk.isLoaded)
+                return false;
+
+            chunks.Remove(chunk);
+
+            Destroy(chunk.gameObject);
+
+            return true;
+        }
+
+        private void LoadNextChunk()
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadNextChunk)}").Auto())
             {
@@ -105,22 +102,48 @@ namespace VoxelWorld.Scripts
 
                 if (camera != null)
                 {
-                    var viewpoint            = camera.transform.position;
-                    var desiredChunksIndices = GetSurroundingChunkIndices(viewpoint);
+                    var viewpoint = camera.transform.position;
+                    var region    = GetChunkRegion(viewpoint);
 
-                    foreach (var desiredChunkIndex in desiredChunksIndices)
+                    foreach (var chunk in region)
                     {
-                        if (LoadChunk(desiredChunkIndex))
+                        if (LoadChunk(chunk))
                             break;
                     }
                 }
             }
         }
 
-        void Update()
+        private void RemoveNextChunk()
+        {
+            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(RemoveNextChunk)}").Auto())
+            {
+                var camera = FindObjectOfType<Camera>();
+
+                if (camera != null)
+                {
+                    var viewpoint = camera.transform.position;
+                    var region    = GetChunkRegion(viewpoint);
+
+                    foreach (var chunk in chunks)
+                    {
+                        if (!region.Any(c => c == chunk.worldChunk))
+                        {
+                            if (RemoveChunk(chunk))
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void Update()
         {
             if (world != null && Time.frameCount % 10 == 0)
+            {
                 LoadNextChunk();
+                RemoveNextChunk();
+            }
         }
     }
 }

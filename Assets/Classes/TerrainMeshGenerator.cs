@@ -69,7 +69,11 @@ namespace VoxelWorld.Classes
         {
             using (new ProfilerMarker($"{nameof(TerrainMeshGenerator)}.{nameof(GenerateBlock)}").Auto())
             {
-                var current       = world.GetBlock(Vector3Int.RoundToInt(position          ));
+                var current = world.GetBlock(Vector3Int.RoundToInt(position));
+
+                if (current == null)
+                    return;
+
                 var rightAdjacent = world.GetBlock(Vector3Int.RoundToInt(position + right  ));
                 var topAdjacent   = world.GetBlock(Vector3Int.RoundToInt(position + up     ));
                 var frontAdjacent = world.GetBlock(Vector3Int.RoundToInt(position + forward));
