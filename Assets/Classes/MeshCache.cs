@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -17,12 +16,14 @@ namespace VoxelWorld.Classes
 
         public List<Color> Colors { get; } = new();
 
+        public MeshTopology topology { get; set; } = MeshTopology.Triangles;
+
         public Mesh ToMesh()
         {
-            var mesh = new Mesh() { indexFormat = IndexFormat.UInt32};
+            var mesh = new Mesh() { indexFormat = IndexFormat.UInt32 };
 
             mesh.SetVertices(Vertices);
-            mesh.SetIndices(Indices, MeshTopology.Triangles, 0);
+            mesh.SetIndices(Indices, topology, 0);
             mesh.SetNormals(Normals);
             mesh.SetUVs(0, UVs);
             mesh.SetColors(Colors);

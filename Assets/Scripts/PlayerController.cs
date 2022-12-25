@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VoxelWorld.Classes;
 
 namespace VoxelWorld.Scripts
 {
@@ -9,6 +10,8 @@ namespace VoxelWorld.Scripts
 
         public float maxSpeed          = 4;
         public float cameraSensitivity = 0.2f;
+
+        BlockTarget target { get; set; }
 
         void UpdateMovement()
         {
@@ -49,10 +52,22 @@ namespace VoxelWorld.Scripts
             }
         }
 
+        void UpdateTarget()
+        {
+            var camera = GetComponentInChildren<Camera>();
+
+            if (camera != null)
+                target = BlockTarget.GetTarget(camera);
+
+            if (target != null)
+                DebugDrawer.DrawBlockTarget(target);
+        }
+
         void Update()
         {
             UpdateRotation();
             UpdateMovement();
+            UpdateTarget();
         }
     }
 }
