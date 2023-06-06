@@ -11,7 +11,7 @@ namespace VoxelWorld.Scripts
         public float maxSpeed          = 4;
         public float cameraSensitivity = 0.2f;
 
-        BlockTarget target { get; set; }
+        public BlockTarget target { get; private set; }
 
         void UpdateMovement()
         {
@@ -58,9 +58,6 @@ namespace VoxelWorld.Scripts
 
             if (camera != null)
                 target = BlockTarget.GetTarget(camera);
-
-            if (target != null)
-                DebugDrawer.DrawBlockTarget(target);
         }
 
         void Update()
