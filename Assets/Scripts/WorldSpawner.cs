@@ -1,4 +1,3 @@
-using Unity.Profiling;
 using UnityEngine;
 using VoxelWorld.Classes;
 
@@ -11,16 +10,6 @@ namespace VoxelWorld.Scripts
 
         public World World { get; private set; }
 
-        void SpawnPlayer()
-        {
-            using (new ProfilerMarker($"{nameof(WorldSpawner)}.{nameof(SpawnPlayer)}").Auto())
-            {
-                var playerPrefab  = Resources.Load<PlayerController>("Prefabs/Player");
-
-                Instantiate(playerPrefab, World.PlayerSpawn, new());
-            }
-        }
-
         void Start()
         {
             World = WorldGenerator.Generate(size);
@@ -29,8 +18,6 @@ namespace VoxelWorld.Scripts
             terrainLoader.world = World;
             
             terrainLoader.LoadChunk(World.PlayerSpawn);
-
-            SpawnPlayer();
         }
     }
 }
