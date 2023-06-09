@@ -4,18 +4,24 @@ using VoxelWorld.Classes;
 
 namespace VoxelWorld.Scripts
 {
+    [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
-        Vector3 _cameraRotation;
+        Vector3 cameraRotation;
 
-        public float maxSpeed          = 4;
-        public float cameraSensitivity = 0.2f;
+        [Min(0)]
+        public float speed = 4;
 
-        public BlockTarget target { get; private set; }
+        [Min(0)]
+        public float mouseSensitivity = 0.2f;
 
-        void UpdateMovement()
+        private CharacterController characterController => GetComponent<CharacterController>();
+
+        private new Camera camera => GetComponentInChildren<Camera>();
+
+        private Vector3 movementInput
         {
-            if (TryGetComponent(out CharacterController controller))
+            get
             {
                 var keyboard  = Keyboard.current;
                 var direction = new Vector3();
@@ -25,46 +31,54 @@ namespace VoxelWorld.Scripts
                 if (keyboard.aKey.isPressed) direction -= transform.right;
                 if (keyboard.dKey.isPressed) direction += transform.right;
 
-                controller.SimpleMove(maxSpeed * direction);
+                return direction;
             }
+        }
+
+        public Vector3 velocity => speed * movementInput;
+
+        public BlockTarget target
+        {
+            get
+            {
+                if (camera != null)
+                    return BlockTarget.GetTarget(camera);
+
+                return null;
+            }
+        }
+
+        void UpdateMovement()
+        {
+            characterController.SimpleMove(velocity);
         }
 
         void UpdateRotation()
         {
-            var mouse  = Mouse.current;
-            var mouseX = mouse.delta.x.ReadValue();
-            var mouseY = mouse.delta.y.ReadValue();
-            var camera = GetComponentInChildren<Camera>();
+            var mouseX = Mouse.current.delta.x.ReadValue();
 
-            transform.Rotate(Vector3.up, mouseX * cameraSensitivity, Space.Self);
-
-            if (camera != null)
-            {
-                _cameraRotation += new Vector3(-mouseY * cameraSensitivity, 0, 0);
-
-                if (_cameraRotation.x > 90)
-                    _cameraRotation.x = 90;
-
-                else if (_cameraRotation.x < -90)
-                    _cameraRotation.x = -90;
-
-                camera.transform.localEulerAngles = _cameraRotation;
-            }
+            transform.Rotate(Vector3.up, mouseX * mouseSensitivity, Space.Self);
         }
 
-        void UpdateTarget()
+        void UpdateCameraPitch()
         {
-            var camera = GetComponentInChildren<Camera>();
-
             if (camera != null)
-                target = BlockTarget.GetTarget(camera);
+            {
+                var mouseY       = Mouse.current.delta.y.ReadValue();
+                var currentPitch = cameraRotation.x;
+                var amount       = -mouseY * mouseSensitivity;
+                var newPitch     = Mathf.Clamp(currentPitch + amount, -90, 90);
+
+                cameraRotation                    = new(newPitch, 0, 0);
+                camera.transform.localEulerAngles = cameraRotation;
+            }
         }
 
         void Update()
         {
-            UpdateRotation();
             UpdateMovement();
-            UpdateTarget();
+            UpdateRotation();
+            UpdateCameraPitch();
         }
     }
 }
