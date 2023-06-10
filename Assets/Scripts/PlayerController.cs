@@ -1,14 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using VoxelWorld.Classes;
 
 namespace VoxelWorld.Scripts
 {
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
-        Vector3 cameraRotation;
-
         [Min(0)]
         public float speed = 4;
 
@@ -16,8 +13,6 @@ namespace VoxelWorld.Scripts
         public float mouseSensitivity = 0.2f;
         
         CharacterController characterController => GetComponent<CharacterController>();
-
-        new Camera camera => GetComponentInChildren<Camera>();
 
         Vector3 movementInput
         {
@@ -51,17 +46,6 @@ namespace VoxelWorld.Scripts
             }
         }
 
-        public BlockTarget target
-        {
-            get
-            {
-                if (camera != null)
-                    return BlockTarget.GetTarget(camera);
-
-                return null;
-            }
-        }
-
         void GetCapsule(out Vector3 start, out Vector3 end)
         {
             var offset = characterController.height / 2 - characterController.radius;
@@ -90,25 +74,10 @@ namespace VoxelWorld.Scripts
             transform.Rotate(Vector3.up, mouseX * mouseSensitivity, Space.Self);
         }
 
-        void UpdateCameraPitch()
-        {
-            if (camera != null)
-            {
-                var mouseY       = Mouse.current.delta.y.ReadValue();
-                var currentPitch = cameraRotation.x;
-                var amount       = -mouseY * mouseSensitivity;
-                var newPitch     = Mathf.Clamp(currentPitch + amount, -90, 90);
-
-                cameraRotation                    = new(newPitch, 0, 0);
-                camera.transform.localEulerAngles = cameraRotation;
-            }
-        }
-
         void Update()
         {
             UpdateMovement();
             UpdateRotation();
-            UpdateCameraPitch();
         }
     }
 }
