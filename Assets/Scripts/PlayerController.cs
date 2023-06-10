@@ -14,17 +14,17 @@ namespace VoxelWorld.Scripts
 
         [Min(0)]
         public float mouseSensitivity = 0.2f;
+        
+        CharacterController characterController => GetComponent<CharacterController>();
 
-        private CharacterController characterController => GetComponent<CharacterController>();
+        new Camera camera => GetComponentInChildren<Camera>();
 
-        private new Camera camera => GetComponentInChildren<Camera>();
-
-        private Vector3 movementInput
+        Vector3 movementInput
         {
             get
             {
                 var keyboard  = Keyboard.current;
-                var direction = new Vector3();
+                var direction = Vector3.zero;
 
                 if (keyboard.wKey.isPressed) direction += transform.forward;
                 if (keyboard.sKey.isPressed) direction -= transform.forward;
@@ -37,6 +37,20 @@ namespace VoxelWorld.Scripts
 
         public Vector3 velocity => speed * movementInput;
 
+        public bool onGround => characterController.collisionFlags.HasFlag(CollisionFlags.CollidedBelow);
+
+        public float heightAboveGround
+        {
+            get
+            {
+                GetCapsule(out var capsuleStart, out var capsuleEnd);
+
+                Physics.CapsuleCast(capsuleStart, capsuleEnd, characterController.radius, Vector3.down, out var hit);
+
+                return hit.distance;
+            }
+        }
+
         public BlockTarget target
         {
             get
@@ -48,9 +62,25 @@ namespace VoxelWorld.Scripts
             }
         }
 
+        void GetCapsule(out Vector3 start, out Vector3 end)
+        {
+            var offset = characterController.height / 2 - characterController.radius;
+
+            start = transform.position + Vector3.down * offset;
+            end   = transform.position + Vector3.up   * offset;
+        }
+
+        void StepDown()
+            => characterController.Move(Vector3.down * characterController.stepOffset);
+
         void UpdateMovement()
         {
+            var onGround = this.onGround;
+            
             characterController.SimpleMove(velocity);
+
+            if (onGround && heightAboveGround <= characterController.stepOffset)
+                StepDown();
         }
 
         void UpdateRotation()
