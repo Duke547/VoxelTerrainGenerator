@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using VoxelWorld.Classes;
 
 namespace VoxelWorld.Scripts
 {
@@ -12,6 +13,29 @@ namespace VoxelWorld.Scripts
 
         [Min(0)]
         public float mouseSensitivity = 0.2f;
+
+        [Min(1)]
+        public int reach = 3;
+
+        public BlockTarget TargetBlock
+        {
+            get
+            {
+                Physics.Raycast(transform.position, transform.forward, out var hit, reach);
+
+                if (hit.collider != null)
+                {
+                    if (hit.collider.TryGetComponent<TerrainChunk>(out var chunk))
+                    {
+                        var position = Vector3Int.RoundToInt(hit.point - hit.normal * 0.5f);
+
+                        return new(position, chunk);
+                    }
+                }
+
+                return null;
+            }
+        }
 
         private void Start()
         {
@@ -44,6 +68,15 @@ namespace VoxelWorld.Scripts
         {
             UpdatePosition();
             UpdateRotation();
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (TargetBlock != null)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireCube(TargetBlock.position, Vector3.one);
+            }
         }
     }
 }
