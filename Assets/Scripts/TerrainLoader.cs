@@ -63,8 +63,11 @@ namespace VoxelWorld.Scripts
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadChunk)}").Auto())
             {
-                if (chunks.Any(terrainChunk => terrainChunk.worldChunk == chunk))
-                    return false;
+                using (new ProfilerMarker($"{nameof(TerrainLoader)}.chunks.Any").Auto())
+                {
+                    if (chunks.Any(terrainChunk => terrainChunk.worldChunk == chunk))
+                        return false;
+                }
 
                 var chunkObject  = new GameObject($"Terrain Chunk {chunk.index}");
                 var terrainChunk = chunkObject.AddComponent<TerrainChunk>();
@@ -139,7 +142,7 @@ namespace VoxelWorld.Scripts
 
         private void Update()
         {
-            if (world != null && Time.frameCount % 10 == 0)
+            if (world != null)
             {
                 LoadNextChunk();
                 RemoveNextChunk();
