@@ -13,7 +13,7 @@ namespace VoxelWorld.Scripts
         public int chunkSize  = 10;
         public int chunkCount = 8;
 
-        private List<TerrainChunk> chunks { get; set; } = new List<TerrainChunk>();
+        Dictionary<Vector2Int, TerrainChunk> chunks { get; set; } = new();
 
         public World world { get; set; }
 
@@ -34,14 +34,14 @@ namespace VoxelWorld.Scripts
         private WorldChunk GetChunkAt(Vector3 position)
             => GetChunkAt(GetChunkIndexAt(position));
 
-        private WorldChunk[] GetChunkRegion(Vector3 viewpoint)
+        private Dictionary<Vector2Int, WorldChunk> GetChunkRegion(Vector3 viewpoint)
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkRegion)}").Auto())
             {
-                var chunks = new List<WorldChunk>();
+                var chunks = new Dictionary<Vector2Int, WorldChunk>();
 
                 if (world == null)
-                    return chunks.ToArray();
+                    return chunks;
 
                 var center = GetChunkIndexAt(viewpoint);
                 var start  = center - new Vector2Int(chunkCount,     chunkCount    );
@@ -50,12 +50,15 @@ namespace VoxelWorld.Scripts
                 for (var y = start.y; y < end.y; y++)
                 {
                     for (var x = start.x; x < end.x; x++)
-                        chunks.Add(GetChunkAt(new Vector2Int(x, y)));
+                    {
+                        var index = new Vector2Int(x, y);
+                        var chunk = GetChunkAt(index);
+
+                        chunks.Add(index, chunk);
+                    }
                 }
 
-                return chunks
-                    .OrderBy(chunk => Vector2Int.Distance(center, chunk.index))
-                    .ToArray();
+                return chunks;
             }
         }
 
@@ -63,9 +66,9 @@ namespace VoxelWorld.Scripts
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadChunk)}").Auto())
             {
-                using (new ProfilerMarker($"{nameof(TerrainLoader)}.chunks.Any").Auto())
+                using (new ProfilerMarker($"{nameof(TerrainLoader)}.chunks.ContainsKey").Auto())
                 {
-                    if (chunks.Any(terrainChunk => terrainChunk.worldChunk == chunk))
+                    if (chunks.ContainsKey(chunk.index))
                         return false;
                 }
 
@@ -76,7 +79,7 @@ namespace VoxelWorld.Scripts
 
                 terrainChunk.worldChunk = chunk;
 
-                chunks.Add(terrainChunk);
+                chunks.Add(chunk.index, terrainChunk);
 
                 return true;
             }
@@ -90,7 +93,7 @@ namespace VoxelWorld.Scripts
             if (!chunk.isLoaded)
                 return false;
 
-            chunks.Remove(chunk);
+            chunks.Remove(chunk.worldChunk.index);
 
             Destroy(chunk.gameObject);
 
@@ -110,7 +113,7 @@ namespace VoxelWorld.Scripts
 
                     foreach (var chunk in region)
                     {
-                        if (LoadChunk(chunk))
+                        if (LoadChunk(chunk.Value))
                             break;
                     }
                 }
@@ -130,9 +133,9 @@ namespace VoxelWorld.Scripts
 
                     foreach (var chunk in chunks)
                     {
-                        if (!region.Any(c => c == chunk.worldChunk))
+                        if (!region.ContainsKey(chunk.Key))
                         {
-                            if (RemoveChunk(chunk))
+                            if (RemoveChunk(chunk.Value))
                                 break;
                         }
                     }
