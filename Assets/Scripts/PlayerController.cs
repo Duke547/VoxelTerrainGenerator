@@ -11,7 +11,9 @@ namespace VoxelWorld.Scripts
 
         [Min(0)]
         public float mouseSensitivity = 0.2f;
-        
+
+        public bool mouseControlEnabled { get; set; } = true;
+
         CharacterController characterController => GetComponent<CharacterController>();
 
         Vector3 movementInput
@@ -74,10 +76,30 @@ namespace VoxelWorld.Scripts
             transform.Rotate(Vector3.up, mouseX * mouseSensitivity, Space.Self);
         }
 
+        void CenterMouse()
+        {
+            if (PlayerCamera.current != null)
+            {
+                var camera = PlayerCamera.current.GetComponent<Camera>();
+                Mouse.current.WarpCursorPosition(camera.pixelRect.center);
+            }
+        }
+
         void Update()
         {
             UpdateMovement();
-            UpdateRotation();
+
+            if (mouseControlEnabled)
+            {
+                UpdateRotation();
+                CenterMouse();
+            }
+
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
+                mouseControlEnabled = !mouseControlEnabled;
+
+            if (PlayerCamera.current != null)
+                PlayerCamera.current.mouseControlEnabled = mouseControlEnabled;
         }
     }
 }

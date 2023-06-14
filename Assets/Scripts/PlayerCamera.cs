@@ -17,6 +17,21 @@ namespace VoxelWorld.Scripts
         [Min(1)]
         public int reach = 3;
 
+        static PlayerCamera _current;
+
+        public static PlayerCamera current
+        {
+            get
+            {
+                if (_current is null)
+                    _current = FindObjectOfType<PlayerCamera>();
+
+                return _current;
+            }
+        }
+
+        public bool mouseControlEnabled { get; set; } = true;
+
         public BlockTarget TargetBlock
         {
             get
@@ -67,7 +82,9 @@ namespace VoxelWorld.Scripts
         void Update()
         {
             UpdatePosition();
-            UpdateRotation();
+
+            if (mouseControlEnabled)
+                UpdateRotation();
         }
 
         private void OnDrawGizmos()
