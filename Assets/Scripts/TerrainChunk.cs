@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -38,6 +40,43 @@ namespace VoxelWorld.Scripts
             collider.sharedMesh = mesh;
 
             isLoading = false;
+        }
+
+        private TerrainChunk[] GetAdjacentChunks()
+        {
+                var adjacents    = new List<TerrainChunk>();
+                var loadedChunks = FindObjectsOfType<TerrainChunk>();
+                var directions   = new Vector2Int[]
+                {
+                    Vector2Int.left,
+                    Vector2Int.left  + Vector2Int.up,
+                    Vector2Int.up,
+                    Vector2Int.up    + Vector2Int.right,
+                    Vector2Int.right,
+                    Vector2Int.right + Vector2Int.down,
+                    Vector2Int.down,
+                    Vector2Int.down  + Vector2Int.left
+                };
+
+                foreach (var direction in directions)
+                {
+                    var loadedChunk = loadedChunks.FirstOrDefault(lc => lc.worldChunk.index == worldChunk.index + direction);
+
+                    if (loadedChunk != null)
+                        adjacents.Add(loadedChunk);
+                }
+
+                return adjacents.ToArray();
+        }
+
+        public void BreakBlock(Vector3Int position)
+        {
+            worldChunk.world.RemoveBlock(position);
+
+            refresh = true;
+
+            foreach (var adjacentChunk in GetAdjacentChunks())
+                adjacentChunk.refresh = true;
         }
     }
 }

@@ -7,12 +7,12 @@ namespace VoxelWorld.Classes
     {
         public Vector3Int position { get; private set; }
 
-        public TerrainChunk chunk { get; private set; }
+        public TerrainChunk terrainChunk { get; private set; }
 
         public BlockTarget(Vector3Int position, TerrainChunk chunk)
         {
-            this.position = position;
-            this.chunk    = chunk;
+            this.position     = position;
+            this.terrainChunk = chunk;
         }
     }
 }

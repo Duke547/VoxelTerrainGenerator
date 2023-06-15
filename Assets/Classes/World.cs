@@ -42,6 +42,9 @@ namespace VoxelWorld.Classes
         public BlockType GetBlock(int x, int y, int z)
             => GetBlock(new(x, y, z));
 
+        public void RemoveBlock(Vector3Int position)
+            => this[position.x, position.y, position.z] = BlockID.Air;
+
         public Vector3 FindSurface(int x, int z)
         {
             var last = new Vector3Int(x, Height - 1, z);

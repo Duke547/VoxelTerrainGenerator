@@ -48,6 +48,8 @@ namespace VoxelWorld.Scripts
             }
         }
 
+        public bool isStriking => Mouse.current.leftButton.wasPressedThisFrame;
+        
         void GetCapsule(out Vector3 start, out Vector3 end)
         {
             var offset = characterController.height / 2 - characterController.radius;
@@ -58,6 +60,17 @@ namespace VoxelWorld.Scripts
 
         void StepDown()
             => characterController.Move(Vector3.down * characterController.stepOffset);
+
+        public void Strike()
+        {
+            if (PlayerCamera.current != null)
+            {
+                var targetBlock = PlayerCamera.current.TargetBlock;
+
+                if (targetBlock != null)
+                    targetBlock.terrainChunk.BreakBlock(targetBlock.position);
+            }
+        }
 
         void UpdateMovement()
         {
@@ -100,6 +113,9 @@ namespace VoxelWorld.Scripts
 
             if (PlayerCamera.current != null)
                 PlayerCamera.current.mouseControlEnabled = mouseControlEnabled;
+
+            if (isStriking)
+                Strike();
         }
     }
 }
