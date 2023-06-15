@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Profiling;
 using UnityEngine;
 using VoxelWorld.Classes;
@@ -62,16 +61,10 @@ namespace VoxelWorld.Scripts
             }
         }
 
-        private bool LoadChunk(WorldChunk chunk)
+        private void LoadChunk(WorldChunk chunk)
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadChunk)}").Auto())
             {
-                using (new ProfilerMarker($"{nameof(TerrainLoader)}.chunks.ContainsKey").Auto())
-                {
-                    if (chunks.ContainsKey(chunk.index))
-                        return false;
-                }
-
                 var chunkObject  = new GameObject($"Terrain Chunk {chunk.index}");
                 var terrainChunk = chunkObject.AddComponent<TerrainChunk>();
 
@@ -81,16 +74,16 @@ namespace VoxelWorld.Scripts
 
                 chunks.Add(chunk.index, terrainChunk);
 
-                return true;
+                terrainChunk.GenerateMesh();
             }
         }
 
-        public bool LoadChunk(Vector3 position)
+        public void LoadChunk(Vector3 position)
             => LoadChunk(GetChunkAt(position));
 
         private bool RemoveChunk(TerrainChunk chunk)
         {
-            if (!chunk.isLoaded)
+            if (chunk.isLoading)
                 return false;
 
             chunks.Remove(chunk.worldChunk.index);
@@ -104,17 +97,30 @@ namespace VoxelWorld.Scripts
         {
             using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadNextChunk)}").Auto())
             {
-                var camera = FindObjectOfType<Camera>();
-
-                if (camera != null)
+                if (PlayerCamera.current != null)
                 {
-                    var viewpoint = camera.transform.position;
+                    var viewpoint = PlayerCamera.current.transform.position;
                     var region    = GetChunkRegion(viewpoint);
 
                     foreach (var chunk in region)
                     {
-                        if (LoadChunk(chunk.Value))
+                        if (chunks.ContainsKey(chunk.Value.index))
+                        {
+                            var terrainChunk = chunks[chunk.Value.index];
+
+                            if (terrainChunk.refresh && !terrainChunk.isLoading)
+                            {
+                                terrainChunk.GenerateMesh();
+                                terrainChunk.refresh = false;
+
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            LoadChunk(chunk.Value);
                             break;
+                        }
                     }
                 }
             }

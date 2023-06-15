@@ -11,41 +11,34 @@ namespace VoxelWorld.Scripts
     {
         public WorldChunk worldChunk { get; set; }
 
-        public bool isLoaded { get; private set; }
+        public bool isLoading { get; private set; }
 
-        private async Task GenerateMesh()
+        public bool refresh { get; set; } = true;
+
+        public async void GenerateMesh()
         {
-            using (new ProfilerMarker($"{nameof(TerrainChunk)}.{nameof(GenerateMesh)}.PreGenerateChunkMesh").Auto())
-            {
-                if (worldChunk == null)
-                    return;
+            if (worldChunk == null || isLoading)
+                return;
 
-                isLoaded = false;
-            }
+            isLoading = true;
 
             var meshCache = await Task.Run(() => TerrainMeshGenerator.GenerateChunkMesh(worldChunk.world, worldChunk.area));
 
-            using (new ProfilerMarker($"{nameof(TerrainChunk)}.{nameof(GenerateMesh)}.PostGenerateChunkMesh").Auto())
-            {
-                if (this == null)
+            if (this == null)
                 return;
 
-                var meshFilter   = GetComponent<MeshFilter>();
-                var meshRenderer = GetComponent<MeshRenderer>();
-                var collider     = GetComponent<MeshCollider>();
-                var mesh         = meshCache.ToMesh();
+            var meshFilter   = GetComponent<MeshFilter>();
+            var meshRenderer = GetComponent<MeshRenderer>();
+            var collider     = GetComponent<MeshCollider>();
+            var mesh         = meshCache.ToMesh();
 
-                meshRenderer.shadowCastingMode = ShadowCastingMode.TwoSided;
-                meshRenderer.material          = Resources.Load<Material>("Materials/Terrain");
+            meshRenderer.shadowCastingMode = ShadowCastingMode.TwoSided;
+            meshRenderer.material          = Resources.Load<Material>("Materials/Terrain");
 
-                meshFilter.mesh     = mesh;
-                collider.sharedMesh = mesh;
+            meshFilter.mesh     = mesh;
+            collider.sharedMesh = mesh;
 
-                isLoaded = true;
-            }
+            isLoading = false;
         }
-
-        async void Start()
-            => await GenerateMesh();
     }
 }
