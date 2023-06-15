@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.Rendering;
 using VoxelWorld.Classes;

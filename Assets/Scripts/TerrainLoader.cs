@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Profiling;
 using UnityEngine;
 using VoxelWorld.Classes;
 
@@ -18,13 +17,10 @@ namespace VoxelWorld.Scripts
 
         private Vector2Int GetChunkIndexAt(Vector3 position)
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkIndexAt)}").Auto())
-            {
-                var x = Max(0, (int)(position.x / chunkSize));
-                var y = Max(0, (int)(position.z / chunkSize));
+            var x = Max(0, (int)(position.x / chunkSize));
+            var y = Max(0, (int)(position.z / chunkSize));
 
-                return new(x, y);
-            }
+            return new(x, y);
         }
 
         private WorldChunk GetChunkAt(Vector2Int chunkIndex)
@@ -35,47 +31,41 @@ namespace VoxelWorld.Scripts
 
         private Dictionary<Vector2Int, WorldChunk> GetChunkRegion(Vector3 viewpoint)
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(GetChunkRegion)}").Auto())
-            {
-                var chunks = new Dictionary<Vector2Int, WorldChunk>();
+            var chunks = new Dictionary<Vector2Int, WorldChunk>();
 
-                if (world == null)
-                    return chunks;
-
-                var center = GetChunkIndexAt(viewpoint);
-                var start  = center - new Vector2Int(chunkCount,     chunkCount    );
-                var end    = start  + new Vector2Int(chunkCount * 2, chunkCount * 2);
-
-                for (var y = start.y; y < end.y; y++)
-                {
-                    for (var x = start.x; x < end.x; x++)
-                    {
-                        var index = new Vector2Int(x, y);
-                        var chunk = GetChunkAt(index);
-
-                        chunks.Add(index, chunk);
-                    }
-                }
-
+            if (world == null)
                 return chunks;
+
+            var center = GetChunkIndexAt(viewpoint);
+            var start  = center - new Vector2Int(chunkCount,     chunkCount    );
+            var end    = start  + new Vector2Int(chunkCount * 2, chunkCount * 2);
+
+            for (var y = start.y; y < end.y; y++)
+            {
+                for (var x = start.x; x < end.x; x++)
+                {
+                    var index = new Vector2Int(x, y);
+                    var chunk = GetChunkAt(index);
+
+                    chunks.Add(index, chunk);
+                }
             }
+
+            return chunks;
         }
 
         private void LoadChunk(WorldChunk chunk)
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadChunk)}").Auto())
-            {
-                var chunkObject  = new GameObject($"Terrain Chunk {chunk.index}");
-                var terrainChunk = chunkObject.AddComponent<TerrainChunk>();
+            var chunkObject  = new GameObject($"Terrain Chunk {chunk.index}");
+            var terrainChunk = chunkObject.AddComponent<TerrainChunk>();
 
-                chunkObject.transform.SetParent(transform);
+            chunkObject.transform.SetParent(transform);
 
-                terrainChunk.worldChunk = chunk;
+            terrainChunk.worldChunk = chunk;
 
-                chunks.Add(chunk.index, terrainChunk);
+            chunks.Add(chunk.index, terrainChunk);
 
-                terrainChunk.GenerateMesh();
-            }
+            terrainChunk.GenerateMesh();
         }
 
         public void LoadChunk(Vector3 position)
@@ -95,32 +85,29 @@ namespace VoxelWorld.Scripts
 
         private void LoadNextChunk()
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(LoadNextChunk)}").Auto())
+            if (PlayerCamera.current != null)
             {
-                if (PlayerCamera.current != null)
+                var viewpoint = PlayerCamera.current.transform.position;
+                var region    = GetChunkRegion(viewpoint);
+
+                foreach (var chunk in region)
                 {
-                    var viewpoint = PlayerCamera.current.transform.position;
-                    var region    = GetChunkRegion(viewpoint);
-
-                    foreach (var chunk in region)
+                    if (chunks.ContainsKey(chunk.Value.index))
                     {
-                        if (chunks.ContainsKey(chunk.Value.index))
-                        {
-                            var terrainChunk = chunks[chunk.Value.index];
+                        var terrainChunk = chunks[chunk.Value.index];
 
-                            if (terrainChunk.refresh && !terrainChunk.isLoading)
-                            {
-                                terrainChunk.GenerateMesh();
-                                terrainChunk.refresh = false;
-
-                                break;
-                            }
-                        }
-                        else
+                        if (terrainChunk.refresh && !terrainChunk.isLoading)
                         {
-                            LoadChunk(chunk.Value);
+                            terrainChunk.GenerateMesh();
+                            terrainChunk.refresh = false;
+
                             break;
                         }
+                    }
+                    else
+                    {
+                        LoadChunk(chunk.Value);
+                        break;
                     }
                 }
             }
@@ -128,22 +115,19 @@ namespace VoxelWorld.Scripts
 
         private void RemoveNextChunk()
         {
-            using (new ProfilerMarker($"{nameof(TerrainLoader)}.{nameof(RemoveNextChunk)}").Auto())
+            var camera = FindObjectOfType<Camera>();
+
+            if (camera != null)
             {
-                var camera = FindObjectOfType<Camera>();
+                var viewpoint = camera.transform.position;
+                var region    = GetChunkRegion(viewpoint);
 
-                if (camera != null)
+                foreach (var chunk in chunks)
                 {
-                    var viewpoint = camera.transform.position;
-                    var region    = GetChunkRegion(viewpoint);
-
-                    foreach (var chunk in chunks)
+                    if (!region.ContainsKey(chunk.Key))
                     {
-                        if (!region.ContainsKey(chunk.Key))
-                        {
-                            if (RemoveChunk(chunk.Value))
-                                break;
-                        }
+                        if (RemoveChunk(chunk.Value))
+                            break;
                     }
                 }
             }

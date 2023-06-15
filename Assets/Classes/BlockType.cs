@@ -1,5 +1,3 @@
-using Unity.Profiling;
-
 namespace VoxelWorld.Classes
 {
     public record BlockType
@@ -16,10 +14,7 @@ namespace VoxelWorld.Classes
 
         public static BlockType GetType(BlockID id)
         {
-            using (new ProfilerMarker($"{nameof(BlockType)}.GetType").Auto())
-            {
-                return Types[(int)id];
-            }
+            return Types[(int)id];
         }
 
         public static readonly BlockType[] Types = new BlockType[]

@@ -1,5 +1,4 @@
-﻿using Unity.Profiling;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VoxelWorld.Classes
 {
@@ -20,34 +19,24 @@ namespace VoxelWorld.Classes
 
         public BlockID this[int x, int y, int z]
         {
-            get
-            {
-                using (new ProfilerMarker($"{nameof(World)}.Indexer_get").Auto())
-                {
-                    return Blocks[GetFlattenedBlockIndex(x, y, z)];
-                }
-            }
-
+            get => Blocks[GetFlattenedBlockIndex(x, y, z)];
             set => Blocks[GetFlattenedBlockIndex(x, y, z)] = value;
         }
 
         public BlockType GetBlock(Vector3Int position)
         {
-            using (new ProfilerMarker($"{nameof(World)}.{nameof(GetBlock)}").Auto())
-            {
-                if (position.x < 0 || position.x >= Width)
-                    return null;
+            if (position.x < 0 || position.x >= Width)
+                return null;
 
-                if (position.y < 0 || position.y >= Height)
-                    return null;
+            if (position.y < 0 || position.y >= Height)
+                return null;
 
-                if (position.z < 0 || position.z >= Length)
-                    return null;
+            if (position.z < 0 || position.z >= Length)
+                return null;
 
-                var blockID = this[position.x, position.y, position.z];
+            var blockID = this[position.x, position.y, position.z];
 
-                return BlockType.GetType(blockID);
-            }
+            return BlockType.GetType(blockID);
         }
 
         public BlockType GetBlock(int x, int y, int z)
@@ -55,20 +44,17 @@ namespace VoxelWorld.Classes
 
         public Vector3 FindSurface(int x, int z)
         {
-            using (new ProfilerMarker("World.FindSurface").Auto())
+            var last = new Vector3Int(x, Height - 1, z);
+
+            for (int y = last.y; y >= 0; y--)
             {
-                var last = new Vector3Int(x, Height - 1, z);
-
-                for (int y = last.y; y >= 0; y--)
-                {
-                    if (!GetBlock(x, y, z).IsSolid)
-                        last = new(x, y, z);
-                    else
-                        break;
-                }
-
-                return last;
+                if (!GetBlock(x, y, z).IsSolid)
+                    last = new(x, y, z);
+                else
+                    break;
             }
+
+            return last;
         }
 
         public BlockType FindSurfaceBlock(int x, int y)
