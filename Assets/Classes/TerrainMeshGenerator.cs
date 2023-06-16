@@ -12,10 +12,27 @@ namespace VoxelWorld.Classes
             int i3 = i2 + 1;
             int i4 = i3 + 1;
 
-            mesh.Vertices.AddRange(new[] { v1, v2, v3, v4 });
-            mesh.Indices .AddRange(new[] { i1, i2, i3, i3, i4, i1 });
-            mesh.Normals .AddRange(new[] { direction, direction, direction, direction });
-            mesh.UVs     .AddRange(new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) });
+            mesh.Vertices.Add(i1, v1);
+            mesh.Vertices.Add(i2, v2);
+            mesh.Vertices.Add(i3, v3);
+            mesh.Vertices.Add(i4, v4);
+
+            mesh.Indices.Add(i1);
+            mesh.Indices.Add(i2);
+            mesh.Indices.Add(i3);
+            mesh.Indices.Add(i3);
+            mesh.Indices.Add(i4);
+            mesh.Indices.Add(i1);
+
+            mesh.Normals.Add(i1, direction);
+            mesh.Normals.Add(i2, direction);
+            mesh.Normals.Add(i3, direction);
+            mesh.Normals.Add(i4, direction);
+
+            mesh.UVs.Add(i1, new Vector2(0, 0));
+            mesh.UVs.Add(i2, new Vector2(1, 0));
+            mesh.UVs.Add(i3, new Vector2(1, 1));
+            mesh.UVs.Add(i4, new Vector2(0, 1));
         }
 
         static void GetBlockFaceVertices(Vector3Int position, Vector3 axis, out Vector3 v1, out Vector3 v2, out Vector3 v3, out Vector3 v4)
