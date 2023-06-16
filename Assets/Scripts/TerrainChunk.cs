@@ -69,14 +69,29 @@ namespace VoxelWorld.Scripts
                 return adjacents.ToArray();
         }
 
-        public void BreakBlock(Vector3Int position)
+        public void Refresh()
         {
-            worldChunk.world.RemoveBlock(position);
-
             refresh = true;
 
             foreach (var adjacentChunk in GetAdjacentChunks())
                 adjacentChunk.refresh = true;
+        }
+
+        public void BreakBlock(Vector3Int position)
+        {
+            worldChunk.world.RemoveBlock(position);
+
+            Refresh();
+        }
+
+        public void PlaceBlock(Vector3Int position)
+        {
+            if (!Physics.CheckBox(position, new(0.4f, 0.4f, 0.4f)))
+            {
+                worldChunk.world.SetBlock(position);
+
+                Refresh();
+            }
         }
     }
 }

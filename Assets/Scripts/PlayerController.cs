@@ -48,6 +48,9 @@ namespace VoxelWorld.Scripts
             if (mouse.leftButton.wasPressedThisFrame)
                 Strike();
 
+            if (mouse.rightButton.wasPressedThisFrame)
+                Place();
+
             if (keyboard.escapeKey.wasPressedThisFrame)
                 mouseControlEnabled = !mouseControlEnabled;
         }
@@ -66,6 +69,17 @@ namespace VoxelWorld.Scripts
 
                 if (targetBlock != null)
                     targetBlock.terrainChunk.BreakBlock(targetBlock.position);
+            }
+        }
+
+        void Place()
+        {
+            if (PlayerCamera.current != null)
+            {
+                var target = PlayerCamera.current.TargetEmptyPosition;
+
+                if (target != null)
+                    target.terrainChunk.PlaceBlock(target.position);
             }
         }
 

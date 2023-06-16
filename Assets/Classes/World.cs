@@ -42,6 +42,9 @@ namespace VoxelWorld.Classes
         public BlockType GetBlock(int x, int y, int z)
             => GetBlock(new(x, y, z));
 
+        public void SetBlock(Vector3Int position)
+            => this[position.x, position.y, position.z] = BlockID.Dirt;
+
         public void RemoveBlock(Vector3Int position)
             => this[position.x, position.y, position.z] = BlockID.Air;
 

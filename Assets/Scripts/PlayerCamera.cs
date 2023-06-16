@@ -32,17 +32,43 @@ namespace VoxelWorld.Scripts
 
         public bool mouseControlEnabled { get; set; } = true;
 
+        public RaycastHit Target
+        {
+            get
+            {
+                Physics.Raycast(transform.position, transform.forward, out var hit, reach, 3);
+
+                return hit;
+            }
+        }
+
+        public BlockTarget TargetEmptyPosition
+        {
+            get
+            {
+                if (Target.collider != null)
+                {
+                    if (Target.collider.TryGetComponent<TerrainChunk>(out var chunk))
+                    {
+                        var position = Vector3Int.RoundToInt(Target.point + Target.normal * 0.5f);
+
+                        return new(position, chunk);
+                    }
+                }
+
+                return null;
+            }
+        }
+
         public BlockTarget TargetBlock
         {
             get
             {
-                Physics.Raycast(transform.position, transform.forward, out var hit, reach);
-
-                if (hit.collider != null)
+                if (Target.collider != null)
                 {
-                    if (hit.collider.TryGetComponent<TerrainChunk>(out var chunk))
+                    if (Target.collider.TryGetComponent<TerrainChunk>(out var chunk))
                     {
-                        var position = Vector3Int.RoundToInt(hit.point - hit.normal * 0.5f);
+                        var position = Vector3Int.RoundToInt(Target.point - Target.normal * 0.5f);
 
                         return new(position, chunk);
                     }

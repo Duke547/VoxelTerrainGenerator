@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3132672267706916081}
   - component: {fileID: 8033928901175976978}
   - component: {fileID: 6795472346828271249}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mouseSensitivity: 0.2
-  reach: 3
+  reach: 4
 --- !u!1 &9172591948224164935
 GameObject:
   m_ObjectHideFlags: 0
@@ -110,7 +110,7 @@ GameObject:
   - component: {fileID: 2519157563470514435}
   - component: {fileID: 8330738011543721630}
   - component: {fileID: 638157235468935338}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
