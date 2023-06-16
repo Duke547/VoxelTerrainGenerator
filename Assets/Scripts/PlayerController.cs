@@ -10,58 +10,55 @@ namespace VoxelWorld.Scripts
         public float speed = 4;
 
         [Min(0)]
-        public float mouseSensitivity = 0.2f;
+        public float jumpStrength = 22;
 
-        public bool mouseControlEnabled { get; set; } = true;
+        [Min(0)]
+        public float jumpFallOff = 4;
+
+        [Min(0)]
+        public float mouseSensitivity = 0.2f;
 
         CharacterController characterController => GetComponent<CharacterController>();
 
-        Vector3 movementInput
-        {
-            get
-            {
-                var keyboard  = Keyboard.current;
-                var direction = Vector3.zero;
+        public bool mouseControlEnabled { get; set; } = true;
 
-                if (keyboard.wKey.isPressed) direction += transform.forward;
-                if (keyboard.sKey.isPressed) direction -= transform.forward;
-                if (keyboard.aKey.isPressed) direction -= transform.right;
-                if (keyboard.dKey.isPressed) direction += transform.right;
+        Vector3 movementInput { get; set; }
 
-                return direction;
-            }
-        }
-
-        public Vector3 velocity => speed * movementInput;
+        float jumpForce { get; set; }
 
         public bool onGround => characterController.collisionFlags.HasFlag(CollisionFlags.CollidedBelow);
 
-        public float heightAboveGround
+        public Vector3 velocity { get; private set; }
+
+        void ApplyInput()
         {
-            get
-            {
-                GetCapsule(out var capsuleStart, out var capsuleEnd);
+            var keyboard = Keyboard.current;
+            var mouse    = Mouse   .current;
 
-                Physics.CapsuleCast(capsuleStart, capsuleEnd, characterController.radius, Vector3.down, out var hit);
+            movementInput = Vector3.zero;
 
-                return hit.distance;
-            }
+            if (keyboard.wKey.isPressed) movementInput += transform.forward;
+            if (keyboard.sKey.isPressed) movementInput -= transform.forward;
+            if (keyboard.aKey.isPressed) movementInput -= transform.right;
+            if (keyboard.dKey.isPressed) movementInput += transform.right;
+
+            if (keyboard.spaceKey.wasPressedThisFrame)
+                Jump();
+
+            if (mouse.leftButton.wasPressedThisFrame)
+                Strike();
+
+            if (keyboard.escapeKey.wasPressedThisFrame)
+                mouseControlEnabled = !mouseControlEnabled;
         }
 
-        public bool isStriking => Mouse.current.leftButton.wasPressedThisFrame;
-        
-        void GetCapsule(out Vector3 start, out Vector3 end)
+        void Jump()
         {
-            var offset = characterController.height / 2 - characterController.radius;
-
-            start = transform.position + Vector3.down * offset;
-            end   = transform.position + Vector3.up   * offset;
+            if (onGround)
+                jumpForce = jumpStrength;
         }
 
-        void StepDown()
-            => characterController.Move(Vector3.down * characterController.stepOffset);
-
-        public void Strike()
+        void Strike()
         {
             if (PlayerCamera.current != null)
             {
@@ -70,23 +67,6 @@ namespace VoxelWorld.Scripts
                 if (targetBlock != null)
                     targetBlock.terrainChunk.BreakBlock(targetBlock.position);
             }
-        }
-
-        void UpdateMovement()
-        {
-            var onGround = this.onGround;
-            
-            characterController.SimpleMove(velocity);
-
-            if (onGround && heightAboveGround <= characterController.stepOffset)
-                StepDown();
-        }
-
-        void UpdateRotation()
-        {
-            var mouseX = Mouse.current.delta.x.ReadValue();
-
-            transform.Rotate(Vector3.up, mouseX * mouseSensitivity, Space.Self);
         }
 
         void CenterMouse()
@@ -98,8 +78,31 @@ namespace VoxelWorld.Scripts
             }
         }
 
+        void UpdateMovement()
+        {
+            var verticalVelocity = Vector3.up * jumpForce + Physics.gravity;
+            var cardinalVelocity = movementInput * speed;
+
+            if (!onGround)
+                cardinalVelocity = new(velocity.x, 0, velocity.z);
+
+            velocity = verticalVelocity + cardinalVelocity;
+
+            characterController.Move(velocity * Time.deltaTime);
+
+            jumpForce = Mathf.Lerp(jumpForce, 0, jumpFallOff * Time.deltaTime);
+        }
+
+        void UpdateRotation()
+        {
+            var mouseX = Mouse.current.delta.x.ReadValue();
+
+            transform.Rotate(Vector3.up, mouseX * mouseSensitivity, Space.Self);
+        }
+
         void Update()
         {
+            ApplyInput();
             UpdateMovement();
 
             if (mouseControlEnabled)
@@ -108,14 +111,8 @@ namespace VoxelWorld.Scripts
                 CenterMouse();
             }
 
-            if (Keyboard.current.escapeKey.wasPressedThisFrame)
-                mouseControlEnabled = !mouseControlEnabled;
-
             if (PlayerCamera.current != null)
                 PlayerCamera.current.mouseControlEnabled = mouseControlEnabled;
-
-            if (isStriking)
-                Strike();
         }
     }
 }
