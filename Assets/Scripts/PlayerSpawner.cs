@@ -5,6 +5,9 @@ namespace VoxelWorld.Scripts
     [RequireComponent(typeof(WorldSpawner))]
     public class PlayerSpawner : MonoBehaviour
     {
+        [Min(15)]
+        public int MaxFPS = 300;
+
         public bool playerSpawned { get; private set; } = false;
 
         private static void SpawnPlayer(Vector3 position)
@@ -16,6 +19,8 @@ namespace VoxelWorld.Scripts
 
         private void Update()
         {
+            Application.targetFrameRate = MaxFPS;
+
             if (!playerSpawned)
             {
                 var world = GetComponent<WorldSpawner>().World;
