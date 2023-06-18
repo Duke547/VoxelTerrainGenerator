@@ -12,10 +12,12 @@ namespace VoxelWorld.Classes
             int i3 = i2 + 1;
             int i4 = i3 + 1;
 
-            mesh.Vertices.AddRange(new[] { v1, v2, v3, v4 });
-            mesh.Indices .AddRange(new[] { i1, i2, i3, i3, i4, i1 });
-            mesh.Normals .AddRange(new[] { direction, direction, direction, direction });
-            mesh.UVs     .AddRange(new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) });
+            mesh.Vertices.Add(new(v1, direction, new(0, 0)));
+            mesh.Vertices.Add(new(v2, direction, new(1, 0)));
+            mesh.Vertices.Add(new(v3, direction, new(1, 1)));
+            mesh.Vertices.Add(new(v4, direction, new(0, 1)));
+            
+            mesh.Indices.AddRange(new[] { i1, i2, i3, i3, i4, i1 });
         }
 
         static void GetBlockFaceVertices(Vector3Int position, Vector3 axis, out Vector3 v1, out Vector3 v2, out Vector3 v3, out Vector3 v4)
