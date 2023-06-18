@@ -6,18 +6,18 @@ namespace VoxelWorld.Scripts.UI
 {
     public class MainMenu : MonoBehaviour
     {
-        public RawImage mapDisplay;
+        public RawImage mapImage;
 
-        World World { get; set; }
+        World world;
 
-        static Texture2D GenerateWorldImage(World world)
+        Texture2D GenerateWorldTexture()
         {
             var texture = new Texture2D(world.Width, world.Length, TextureFormat.RGB24, 0, true)
             {
                 filterMode = FilterMode.Point
             };
 
-            for (int y = 0; y < world.Height; y++)
+            for (int y = 0; y < world.Length; y++)
             {
                 for (int x = 0; x < world.Width; x++)
                 {
@@ -35,10 +35,13 @@ namespace VoxelWorld.Scripts.UI
 
         public void GenerateWorld()
         {
-            World = WorldGenerator.Generate(100);
+            world = WorldGenerator.Generate(1000);
 
-            if (mapDisplay != null)
-                mapDisplay.texture = GenerateWorldImage(World);
+            if (mapImage != null)
+            {
+                mapImage.texture = GenerateWorldTexture();
+                mapImage.color   = Color.white;
+            }
         }
     }
 }
