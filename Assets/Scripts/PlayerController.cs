@@ -119,7 +119,7 @@ namespace VoxelWorld.Scripts
             ApplyInput();
             UpdateMovement();
 
-            if (mouseControlEnabled)
+            if (mouseControlEnabled && Application.isFocused)
             {
                 UpdateRotation();
                 CenterMouse();
