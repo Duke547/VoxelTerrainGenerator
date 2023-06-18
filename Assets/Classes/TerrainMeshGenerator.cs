@@ -12,11 +12,11 @@ namespace VoxelWorld.Classes
             int i3 = i2 + 1;
             int i4 = i3 + 1;
 
-            mesh.Vertices.Add(new(v1, direction, new(0, 0)));
-            mesh.Vertices.Add(new(v2, direction, new(1, 0)));
-            mesh.Vertices.Add(new(v3, direction, new(1, 1)));
-            mesh.Vertices.Add(new(v4, direction, new(0, 1)));
-            
+            mesh.Vertices.Add(new() { Position = v1, Normal = direction, UV = new(0, 0) });
+            mesh.Vertices.Add(new() { Position = v2, Normal = direction, UV = new(1, 0) });
+            mesh.Vertices.Add(new() { Position = v3, Normal = direction, UV = new(1, 1) });
+            mesh.Vertices.Add(new() { Position = v4, Normal = direction, UV = new(0, 1) });
+
             mesh.Indices.AddRange(new[] { i1, i2, i3, i3, i4, i1 });
         }
 
