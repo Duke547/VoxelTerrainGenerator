@@ -17,12 +17,6 @@ namespace VoxelWorld.Classes
         int GetFlattenedBlockIndex(int x, int y, int z)
             => y * Width * Length + z * Width + x;
 
-        public BlockID this[int x, int y, int z]
-        {
-            get => Blocks[GetFlattenedBlockIndex(x, y, z)];
-            set => Blocks[GetFlattenedBlockIndex(x, y, z)] = value;
-        }
-
         public BlockType GetBlock(Vector3Int position)
         {
             if (position.x < 0 || position.x >= Width)
@@ -34,7 +28,7 @@ namespace VoxelWorld.Classes
             if (position.z < 0 || position.z >= Length)
                 return null;
 
-            var blockID = this[position.x, position.y, position.z];
+            var blockID = Blocks[GetFlattenedBlockIndex(position.x, position.y, position.z)];
 
             return BlockType.GetType(blockID);
         }
@@ -43,10 +37,10 @@ namespace VoxelWorld.Classes
             => GetBlock(new(x, y, z));
 
         public void SetBlock(Vector3Int position)
-            => this[position.x, position.y, position.z] = BlockID.Dirt;
+            => Blocks[GetFlattenedBlockIndex(position.x, position.y, position.z)] = BlockID.Dirt;
 
         public void RemoveBlock(Vector3Int position)
-            => this[position.x, position.y, position.z] = BlockID.Air;
+            => Blocks[GetFlattenedBlockIndex(position.x, position.y, position.z)] = BlockID.Air;
 
         public Vector3 FindSurface(int x, int z)
         {

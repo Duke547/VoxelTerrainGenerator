@@ -31,7 +31,7 @@ namespace VoxelWorld.Classes
                     for (var y = 0; y < world.Height; y++)
                     {
                         if (y < surface[x, z] * world.Height)
-                            world[x, y, z] = BlockID.Dirt;
+                            world.SetBlock(new(x, y, z));
                     }
                 }
             }
