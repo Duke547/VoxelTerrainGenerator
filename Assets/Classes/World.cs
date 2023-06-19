@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿//using Unity.Profiling;
+using UnityEngine;
 
 namespace VoxelWorld.Classes
 {
@@ -19,18 +20,21 @@ namespace VoxelWorld.Classes
 
         public BlockType GetBlock(Vector3Int position)
         {
-            if (position.x < 0 || position.x >= Width)
-                return null;
+            //using (new ProfilerMarker($"{nameof(World)}.{nameof(GetBlock)}").Auto())
+            //{
+                if (position.x < 0 || position.x >= Width)
+                    return null;
 
-            if (position.y < 0 || position.y >= Height)
-                return null;
+                if (position.y < 0 || position.y >= Height)
+                    return null;
 
-            if (position.z < 0 || position.z >= Length)
-                return null;
+                if (position.z < 0 || position.z >= Length)
+                    return null;
 
-            var blockID = Blocks[GetFlattenedBlockIndex(position.x, position.y, position.z)];
+                var blockID = Blocks[GetFlattenedBlockIndex(position.x, position.y, position.z)];
 
-            return BlockType.GetType(blockID);
+                return BlockType.GetType(blockID); 
+            //}
         }
 
         public BlockType GetBlock(int x, int y, int z)
@@ -44,17 +48,20 @@ namespace VoxelWorld.Classes
 
         public Vector3 FindSurface(int x, int z)
         {
-            var last = new Vector3Int(x, Height - 1, z);
+            //using (new ProfilerMarker($"{nameof(World)}.{nameof(FindSurface)}").Auto())
+            //{
+                var last = new Vector3Int(x, Height - 1, z);
 
-            for (int y = last.y; y >= 0; y--)
-            {
-                if (!GetBlock(x, y, z).IsSolid)
-                    last = new(x, y, z);
-                else
-                    break;
-            }
+                for (int y = last.y; y >= 0; y--)
+                {
+                    if (!GetBlock(x, y, z).IsSolid)
+                        last = new(x, y, z);
+                    else
+                        break;
+                }
 
-            return last;
+                return last; 
+            //}
         }
 
         public BlockType FindSurfaceBlock(int x, int y)

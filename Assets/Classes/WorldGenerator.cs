@@ -1,22 +1,26 @@
+//using Unity.Profiling;
 using UnityEngine;
 
 namespace VoxelWorld.Classes
 {
     public static class WorldGenerator
     {
-        static float[,] GenerateSurfaceData(int size)
+        public static float[,] GenerateSurfaceData(int size)
         {
-            var data = new float[size, size];
+            //using (new ProfilerMarker($"{nameof(WorldGenerator)}.{nameof(GenerateSurfaceData)}").Auto())
+            //{
+                var data = new float[size, size];
 
-            for (var z = 0; z < size; z++)
-            {
-                for (var x = 0; x < size; x++)
+                for (var z = 0; z < size; z++)
                 {
-                    data[x, z] = Mathf.PerlinNoise(x / 100f, z / 100f);
+                    for (var x = 0; x < size; x++)
+                    {
+                        data[x, z] = Mathf.PerlinNoise(x / 100f, z / 100f);
+                    }
                 }
-            }
 
-            return data;
+                return data; 
+            //}
         }
 
         public static World Generate(int size)

@@ -1,3 +1,4 @@
+//using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.UI;
 using VoxelWorld.Classes;
@@ -8,40 +9,42 @@ namespace VoxelWorld.Scripts.UI
     {
         public RawImage mapImage;
 
-        World world;
-
-        Texture2D GenerateWorldTexture()
+        static Texture2D GenerateWorldTexture(int size)
         {
-            var texture = new Texture2D(world.Width, world.Length, TextureFormat.RGB24, 0, true)
-            {
-                filterMode = FilterMode.Point
-            };
-
-            for (int y = 0; y < world.Length; y++)
-            {
-                for (int x = 0; x < world.Width; x++)
+            //using (new ProfilerMarker($"{nameof(MainMenu)}.{nameof(GenerateWorldTexture)}").Auto())
+            //{
+                var surface = WorldGenerator.GenerateSurfaceData(size);
+                var texture = new Texture2D(size, size, TextureFormat.RGB24, 0, true)
                 {
-                    var blockLoc = Vector3Int.RoundToInt(world.FindSurface(x, y));
-                    var color    = new Color(120/255f, 79/255f, 55/255f) * blockLoc.y / world.Height;
+                    filterMode = FilterMode.Point
+                };
 
-                    texture.SetPixel(x, y, color);
+                for (int y = 0; y < size; y++)
+                {
+                    for (int x = 0; x < size; x++)
+                    {
+                        var color = new Color(120/255f, 79/255f, 55/255f) * surface[x, y];
+
+                        texture.SetPixel(x, y, color);
+                    }
                 }
-            }
-            
-            texture.Apply();
 
-            return texture;
+                texture.Apply();
+
+                return texture;
+           //}
         }
 
         public void GenerateWorld()
         {
-            world = WorldGenerator.Generate(1000);
-
-            if (mapImage != null)
-            {
-                mapImage.texture = GenerateWorldTexture();
-                mapImage.color   = Color.white;
-            }
+            ////using (new ProfilerMarker($"{nameof(MainMenu)}.{nameof(GenerateWorld)}").Auto())
+            //{
+                if (mapImage != null)
+                {
+                    mapImage.texture = GenerateWorldTexture(1000);
+                    mapImage.color   = Color.white;
+                }
+            //}
         }
     }
 }
