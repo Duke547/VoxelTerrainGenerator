@@ -5,80 +5,64 @@ namespace VoxelWorld.Classes
 {
     public static class TerrainMeshGenerator
     {
-        static void GenerateBlockFace(MeshCache mesh, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4, Vector3 direction)
+        static void GenerateBlockFace(MeshCache mesh, Vector3Int blockCenter, Vector3 direction)
         {
-            int i1 = mesh.Vertices.Count;
-            int i2 = i1 + 1;
-            int i3 = i2 + 1;
-            int i4 = i3 + 1;
+            var up      = direction;
+            var left    = zero;
+            var forward = zero;
 
-            mesh.Vertices.Add(new() { Position = v1, Normal = direction, UV = new(0, 0) });
-            mesh.Vertices.Add(new() { Position = v2, Normal = direction, UV = new(1, 0) });
-            mesh.Vertices.Add(new() { Position = v3, Normal = direction, UV = new(1, 1) });
-            mesh.Vertices.Add(new() { Position = v4, Normal = direction, UV = new(0, 1) });
+            OrthoNormalize(ref up, ref left, ref forward);
 
-            mesh.Indices.AddRange(new[] { i1, i2, i3, i3, i4, i1 });
+            var right    = -left;
+            var backward = -forward;
+
+            var distance   = 0.5f;
+            var faceCenter = blockCenter + distance * up;
+
+            var v1 = faceCenter + distance * forward + distance * left;
+            var v2 = v1 + distance * 2 * right;
+            var v3 = v2 + distance * 2 * backward;
+            var v4 = v3 + distance * 2 * left;
+
+            mesh.Vertices.Add(new() { Position = v1, Normal = up, UV = new(0, 0) });
+            mesh.Vertices.Add(new() { Position = v2, Normal = up, UV = new(0, 1) });
+            mesh.Vertices.Add(new() { Position = v3, Normal = up, UV = new(1, 1) });
+            mesh.Vertices.Add(new() { Position = v4, Normal = up, UV = new(1, 0) });
+
+            var vCount = mesh.Vertices.Count;
+
+            mesh.Indices.Add(vCount - 4);
+            mesh.Indices.Add(vCount - 3);
+            mesh.Indices.Add(vCount - 2);
+            mesh.Indices.Add(vCount - 2);
+            mesh.Indices.Add(vCount - 1);
+            mesh.Indices.Add(vCount - 4);
         }
 
-        static void GetBlockFaceVertices(Vector3Int position, Vector3 axis, out Vector3 v1, out Vector3 v2, out Vector3 v3, out Vector3 v4)
+        static void TryGenerateAdjacentFace(World world, MeshCache mesh, BlockType block, Vector3Int blockPosition, Vector3 direction)
         {
-            if (axis == right)
-            {
-                v1 = position + right * 0.5f + down * 0.5f + forward * 0.5f;
-                v2 = v1       + back;
-                v3 = v2       + up;
-                v4 = v3       + forward;
-            }
+            var adjacentPosition = Vector3Int.RoundToInt(blockPosition + direction.normalized);
+            var adjacentBlock    = world.GetBlock(adjacentPosition);
 
-            else if (axis == up)
+            if (adjacentBlock != null && block.IsSolid != adjacentBlock.IsSolid)
             {
-                v1 = position + up * 0.5f + left * 0.5f + forward * 0.5f;
-                v2 = v1       + right;
-                v3 = v2       + back;
-                v4 = v3       + left;
-            }
-
-            else
-            {
-                v1 = position + forward * 0.5f + down * 0.5f + left * 0.5f;
-                v2 = v1 + right;
-                v3 = v2 + up;
-                v4 = v3 + left;
-            }
-        }
-
-        static void TryGenerateAdjacentFace(MeshCache mesh, BlockType first, BlockType second, Vector3Int position, Vector3 axis)
-        {
-            if (first.IsSolid != second.IsSolid)
-            {
-                GetBlockFaceVertices(position, axis, out var v1, out var v2, out var v3, out var v4);
-
-                if (first.IsSolid)
-                    GenerateBlockFace(mesh, v1, v2, v3, v4, axis);
+                if (block.IsSolid)
+                    GenerateBlockFace(mesh, blockPosition, direction);
                 else
-                    GenerateBlockFace(mesh, v4, v3, v2, v1, -axis);
+                    GenerateBlockFace(mesh, adjacentPosition, -direction);
             }
         }
 
         static void GenerateBlock(World world, MeshCache mesh, Vector3Int position)
         {
-            var current = world.GetBlock(Vector3Int.RoundToInt(position));
+            var current = world.GetBlock(position);
 
             if (current == null)
                 return;
 
-            var rightAdjacent = world.GetBlock(Vector3Int.RoundToInt(position + right  ));
-            var topAdjacent   = world.GetBlock(Vector3Int.RoundToInt(position + up     ));
-            var frontAdjacent = world.GetBlock(Vector3Int.RoundToInt(position + forward));
-
-            if (rightAdjacent != null)
-                TryGenerateAdjacentFace(mesh, current, rightAdjacent, position, right);
-            
-            if (topAdjacent != null)
-                TryGenerateAdjacentFace(mesh, current, topAdjacent,   position, up);
-
-            if (frontAdjacent != null)
-                TryGenerateAdjacentFace(mesh, current, frontAdjacent, position, forward);
+            TryGenerateAdjacentFace(world, mesh, current, position, right  );
+            TryGenerateAdjacentFace(world, mesh, current, position, up     );
+            TryGenerateAdjacentFace(world, mesh, current, position, forward);
         }
 
         static void GenerateChunkBlocks(WorldChunk chunk, MeshCache mesh)
