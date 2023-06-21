@@ -23,7 +23,7 @@ namespace VoxelWorld.Scripts
 
             isLoading = true;
 
-            var meshCache = await Task.Run(() => TerrainMeshGenerator.GenerateChunkMesh(worldChunk.world, worldChunk.area));
+            var meshCache = await Task.Run(() => TerrainMeshGenerator.GenerateChunkMesh(worldChunk));
 
             if (this == null)
                 return;

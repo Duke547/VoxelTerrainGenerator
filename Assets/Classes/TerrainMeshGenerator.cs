@@ -81,23 +81,25 @@ namespace VoxelWorld.Classes
                 TryGenerateAdjacentFace(mesh, current, frontAdjacent, position, forward);
         }
 
-        static void GenerateChunkBlocks(World world, MeshCache mesh, RectInt rect)
+        static void GenerateChunkBlocks(WorldChunk chunk, MeshCache mesh)
         {
-            for (int z = rect.y; z < rect.height + rect.y; z++)
+            var area = chunk.area;
+
+            for (int z = area.y; z < area.height + area.y; z++)
             {
-                for (int y = 0; y < world.Height; y++)
+                for (int y = 0; y < chunk.world.Height; y++)
                 {
-                    for (int x = rect.x; x < rect.width + rect.x; x++)
-                        GenerateBlock(world, mesh, new(x, y, z));
+                    for (int x = area.x; x < area.width + area.x; x++)
+                        GenerateBlock(chunk.world, mesh, new(x, y, z));
                 }
             }
         }
 
-        public static MeshCache GenerateChunkMesh(World world, RectInt rect)
+        public static MeshCache GenerateChunkMesh(WorldChunk chunk)
         {
             var mesh = new MeshCache();
 
-            GenerateChunkBlocks(world, mesh, rect);
+            GenerateChunkBlocks(chunk, mesh);
 
             return mesh;
         }
