@@ -25,20 +25,23 @@ namespace VoxelWorld.Classes
 
         public static World Generate(int size)
         {
-            var world   = new World(size);
+            var height  = 100;
+            var blocks  = new BlockID[size, height, size];
             var surface = GenerateSurfaceData(size);
 
-            for (var z = 0; z < world.Length; z++)
+            for (var z = 0; z < size; z++)
             {
-                for (var x = 0; x < world.Width; x++)
+                for (var x = 0; x < size; x++)
                 {
-                    for (var y = 0; y < world.Height; y++)
+                    for (var y = 0; y < height; y++)
                     {
-                        if (y < surface[x, z] * world.Height)
-                            world.SetBlock(new(x, y, z));
+                        if (y < surface[x, z] * height)
+                            blocks[x, y, z] = BlockID.Dirt;
                     }
                 }
             }
+
+            var world = new World(blocks);
 
             world.PlayerSpawn = world.FindSurface(size/2, size/2) + Vector3.up * 3;
 
