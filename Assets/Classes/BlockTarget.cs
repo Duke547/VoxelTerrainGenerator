@@ -5,14 +5,14 @@ namespace VoxelWorld.Classes
 {
     public class BlockTarget
     {
-        public Vector3Int position { get; private set; }
+        public Vector3Int Position { get; private set; }
 
-        public TerrainChunk terrainChunk { get; private set; }
+        public TerrainChunk TerrainChunk { get; private set; }
 
         public BlockTarget(Vector3Int position, TerrainChunk chunk)
         {
-            this.position     = position;
-            this.terrainChunk = chunk;
+            Position     = position;
+            TerrainChunk = chunk;
         }
     }
 }

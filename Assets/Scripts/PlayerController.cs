@@ -68,7 +68,7 @@ namespace VoxelWorld.Scripts
                 var targetBlock = PlayerCamera.current.TargetBlock;
 
                 if (targetBlock != null)
-                    targetBlock.terrainChunk.BreakBlock(targetBlock.position);
+                    targetBlock.TerrainChunk.BreakBlock(targetBlock.Position);
             }
         }
 
@@ -79,7 +79,7 @@ namespace VoxelWorld.Scripts
                 var target = PlayerCamera.current.TargetEmptyPosition;
 
                 if (target != null)
-                    target.terrainChunk.PlaceBlock(target.position);
+                    target.TerrainChunk.PlaceBlock(target.Position);
             }
         }
 

@@ -118,7 +118,7 @@ namespace VoxelWorld.Scripts
             if (TargetBlock != null)
             {
                 Gizmos.color = Color.red;
-                Gizmos.DrawWireCube(TargetBlock.position, Vector3.one);
+                Gizmos.DrawWireCube(TargetBlock.Position, Vector3.one);
             }
         }
     }
