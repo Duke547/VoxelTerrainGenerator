@@ -10,7 +10,7 @@ namespace VoxelWorld.Classes
 
         public List<int> Indices { get; } = new();
 
-        public MeshTopology topology { get; set; } = MeshTopology.Triangles;
+        public MeshTopology Topology { get; set; } = MeshTopology.Triangles;
 
         public Mesh ToMesh()
         {
@@ -29,7 +29,7 @@ namespace VoxelWorld.Classes
             }
 
             mesh.SetVertices(vertices            );
-            mesh.SetIndices (Indices, topology, 0);
+            mesh.SetIndices (Indices, Topology, 0);
             mesh.SetNormals (normals             );
             mesh.SetUVs     (0, uvs              );
             mesh.SetColors  (colors              );
