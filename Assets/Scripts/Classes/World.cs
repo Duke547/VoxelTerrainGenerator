@@ -5,7 +5,7 @@ namespace VoxelWorld.Classes
 {
     public class World
     {
-        BlockID[,,] Blocks { get; }
+        byte[,,] Blocks { get; }
 
         public int Width => Blocks.GetLength(0);
 
@@ -31,7 +31,7 @@ namespace VoxelWorld.Classes
 
             var blockID = Blocks[position.x, position.y, position.z];
 
-            return BlockType.GetType(blockID); 
+            return BlockType.Types[blockID]; 
             
             //}
         }
@@ -40,10 +40,10 @@ namespace VoxelWorld.Classes
             => GetBlock(new(x, y, z));
 
         public void SetBlock(Vector3Int position)
-            => Blocks[position.x, position.y, position.z] = BlockID.Dirt;
+            => Blocks[position.x, position.y, position.z] = 1;
 
         public void RemoveBlock(Vector3Int position)
-            => Blocks[position.x, position.y, position.z] = BlockID.Air;
+            => Blocks[position.x, position.y, position.z] = 0;
 
         public Vector3 FindSurface(int x, int z)
         {
@@ -66,7 +66,7 @@ namespace VoxelWorld.Classes
         public BlockType FindSurfaceBlock(int x, int y)
             => GetBlock(Vector3Int.RoundToInt(FindSurface(x, y)));
 
-        public World(BlockID[,,] blocks)
+        public World(byte[,,] blocks)
             => Blocks = blocks;
     }
 }

@@ -12,15 +12,10 @@ namespace VoxelWorld.Classes
             IsSolid = isSolid;
         }
 
-        public static BlockType GetType(BlockID id)
+        public static BlockType[] Types { get; } = new BlockType[]
         {
-            return Types[(int)id];
-        }
-
-        public static readonly BlockType[] Types = new BlockType[]
-        {
-            new ("Air",  false)
-           ,new ("Dirt", true )
+            new("Air",  false) // 0
+           ,new("Dirt", true ) // 1
         };
     }
 }

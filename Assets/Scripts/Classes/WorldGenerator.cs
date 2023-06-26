@@ -26,7 +26,7 @@ namespace VoxelWorld.Classes
         public static World Generate(int size)
         {
             var height  = 100;
-            var blocks  = new BlockID[size, height, size];
+            var blocks  = new byte[size, height, size];
             var surface = GenerateSurfaceData(size);
 
             for (var z = 0; z < size; z++)
@@ -36,7 +36,7 @@ namespace VoxelWorld.Classes
                     for (var y = 0; y < height; y++)
                     {
                         if (y < surface[x, z] * height)
-                            blocks[x, y, z] = BlockID.Dirt;
+                            blocks[x, y, z] = 1;
                     }
                 }
             }
