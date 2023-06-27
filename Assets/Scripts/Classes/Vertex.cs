@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using UnityEngine;
 
 namespace VoxelWorld.Classes
 {
@@ -13,5 +14,23 @@ namespace VoxelWorld.Classes
         public Color Color { get; set; } = Color.white;
 
         public override string ToString() => Position.ToString();
+
+        public static void Write(BinaryWriter writer, Vertex vertex)
+        {
+            writer.WriteVector3(vertex.Position);
+            writer.WriteVector3(vertex.Normal  );
+            writer.WriteColor  (vertex.Color   );
+            writer.WriteVector2(vertex.UV      );
+        }
+
+        public static Vertex Read(BinaryReader reader)
+        {
+            var position = reader.ReadVector3();
+            var normal   = reader.ReadVector3();
+            var color    = reader.ReadColor  ();
+            var uv       = reader.ReadVector2();
+
+            return new() { Position = position, Normal = normal, Color = color, UV = uv };
+        }
     }
 }
