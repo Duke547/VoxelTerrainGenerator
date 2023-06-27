@@ -61,5 +61,35 @@ namespace VoxelWorld.Testing
             Assert.That(output.y, Is.EqualTo(input.y), "Y");
             Assert.That(output.z, Is.EqualTo(input.z), "Z");
         }
+
+        [Test]
+        public void Color_Test()
+        {
+            var file  = ".//Assets/Tests/TestData/Color";
+            var input = Color.blue;
+            
+            Color output;
+
+            using var writeStream = File.Open(file, FileMode.Create);
+            {
+                using var writer = new BinaryWriter(writeStream, Encoding.UTF8, false);
+                {
+                    writer.WriteColor(input);
+                }
+            }
+
+            using var readStream = File.Open(file, FileMode.Open);
+            {
+                using var reader = new BinaryReader(readStream, Encoding.UTF8, false);
+                {
+                    output = reader.ReadColor();
+                }
+            }
+
+            Assert.That(output.r, Is.EqualTo(input.r), "R");
+            Assert.That(output.g, Is.EqualTo(input.g), "G");
+            Assert.That(output.b, Is.EqualTo(input.b), "B");
+            Assert.That(output.a, Is.EqualTo(input.a), "A");
+        }
     }
 }

@@ -34,5 +34,23 @@ namespace VoxelWorld
 
             return new(x, y, z);
         }
+
+        public static void WriteColor(this BinaryWriter writer, Color color)
+        {
+            writer.Write(color.r);
+            writer.Write(color.g);
+            writer.Write(color.b);
+            writer.Write(color.a);
+        }
+
+        public static Color ReadColor(this BinaryReader reader)
+        {
+            var r = reader.ReadSingle();
+            var g = reader.ReadSingle();
+            var b = reader.ReadSingle();
+            var a = reader.ReadSingle();
+
+            return new(r, g, b, a);
+        }
     }
 }
