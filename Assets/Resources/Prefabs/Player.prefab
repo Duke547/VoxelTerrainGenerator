@@ -99,7 +99,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 256492271f7079e4f82e1cdb2017547a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mouseSensitivity: 0.2
   reach: 4
 --- !u!114 &7640795445305230398
 MonoBehaviour:
@@ -189,6 +188,7 @@ GameObject:
   - component: {fileID: 2519157563470514435}
   - component: {fileID: 8330738011543721630}
   - component: {fileID: 638157235468935338}
+  - component: {fileID: -7728734351066549204}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -245,4 +245,16 @@ MonoBehaviour:
   speed: 4
   jumpStrength: 22
   jumpFallOff: 4
+--- !u!114 &-7728734351066549204
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9172591948224164935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b50c8e5f9f874db4dad5976d70caa60f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   mouseSensitivity: 0.2
