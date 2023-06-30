@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+
 namespace VoxelWorld
 {
     public record BlockType
@@ -14,8 +17,21 @@ namespace VoxelWorld
 
         public static BlockType[] Types { get; } = new BlockType[]
         {
-            new("Air",  false) // 0
-           ,new("Dirt", true ) // 1
+            new("Air",  false),
+            new("Dirt", true )
         };
+
+        public static BlockType GetBlockType(string name)
+            => Types.FirstOrDefault(t => t.Name == name);
+
+        public static int GetBlockTypeID(string name)
+        {
+            var blockType = Types.FirstOrDefault(t => t.Name == name);
+
+            if (blockType != null)
+                return Array.IndexOf(Types, blockType);
+
+            return 0;
+        }
     }
 }
