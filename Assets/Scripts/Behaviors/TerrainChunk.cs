@@ -60,7 +60,7 @@ namespace VoxelWorld.Scripts
 
                 foreach (var direction in directions)
                 {
-                    var loadedChunk = loadedChunks.FirstOrDefault(lc => lc.worldChunk.index == worldChunk.index + direction);
+                    var loadedChunk = loadedChunks.FirstOrDefault(lc => lc.worldChunk.Index == worldChunk.Index + direction);
 
                     if (loadedChunk != null)
                         adjacents.Add(loadedChunk);
@@ -79,7 +79,7 @@ namespace VoxelWorld.Scripts
 
         public void BreakBlock(Vector3Int position)
         {
-            worldChunk.world.RemoveBlock(position);
+            worldChunk.World.RemoveBlock(position);
 
             Refresh();
         }
@@ -88,7 +88,7 @@ namespace VoxelWorld.Scripts
         {
             if (!Physics.CheckBox(position, new(0.4f, 0.4f, 0.4f)))
             {
-                worldChunk.world.SetBlock(position);
+                worldChunk.World.SetBlock(position);
 
                 Refresh();
             }

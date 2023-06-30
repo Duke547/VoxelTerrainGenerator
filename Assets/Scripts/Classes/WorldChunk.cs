@@ -4,23 +4,23 @@ namespace VoxelWorld.Classes
 {
     public record WorldChunk
     {
-        public World world { get; private set; }
+        public World World { get; private set; }
 
-        public Vector2Int index { get; private set; }
+        public Vector2Int Index { get; private set; }
 
-        public int size { get; private set; }
+        public int Size { get; private set; }
 
-        public Vector2Int position => index * size;
+        public Vector2Int Position => Index * Size;
 
-        public int height => world.Height;
+        public int Height => World.Height;
 
-        public RectInt area => new(position, new(size, size));
+        public RectInt Area => new(Position, new(Size, Size));
 
         public WorldChunk(World world, Vector2Int index, int size)
         {
-            this.world  = world;
-            this.index  = index;
-            this.size   = size;
+            this.World  = world;
+            this.Index  = index;
+            this.Size   = size;
         }
     }
 }

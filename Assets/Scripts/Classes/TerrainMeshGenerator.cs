@@ -67,14 +67,14 @@ namespace VoxelWorld.Classes
 
         static void GenerateChunkBlocks(WorldChunk chunk, MeshCache mesh)
         {
-            var area = chunk.area;
+            var area = chunk.Area;
 
             for (int z = area.y; z < area.height + area.y; z++)
             {
-                for (int y = 0; y < chunk.world.Height; y++)
+                for (int y = 0; y < chunk.World.Height; y++)
                 {
                     for (int x = area.x; x < area.width + area.x; x++)
-                        GenerateBlock(chunk.world, mesh, new(x, y, z));
+                        GenerateBlock(chunk.World, mesh, new(x, y, z));
                 }
             }
         }

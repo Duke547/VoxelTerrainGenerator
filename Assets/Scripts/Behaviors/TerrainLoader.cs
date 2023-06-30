@@ -56,14 +56,14 @@ namespace VoxelWorld.Scripts
 
         private void LoadChunk(WorldChunk chunk)
         {
-            var chunkObject  = new GameObject($"Terrain Chunk {chunk.index}");
+            var chunkObject  = new GameObject($"Terrain Chunk {chunk.Index}");
             var terrainChunk = chunkObject.AddComponent<TerrainChunk>();
 
             chunkObject.transform.SetParent(transform);
 
             terrainChunk.worldChunk = chunk;
 
-            chunks.Add(chunk.index, terrainChunk);
+            chunks.Add(chunk.Index, terrainChunk);
 
             terrainChunk.GenerateMesh();
         }
@@ -76,7 +76,7 @@ namespace VoxelWorld.Scripts
             if (chunk.isLoading)
                 return false;
 
-            chunks.Remove(chunk.worldChunk.index);
+            chunks.Remove(chunk.worldChunk.Index);
 
             Destroy(chunk.gameObject);
 
@@ -92,9 +92,9 @@ namespace VoxelWorld.Scripts
 
                 foreach (var chunk in region)
                 {
-                    if (chunks.ContainsKey(chunk.Value.index))
+                    if (chunks.ContainsKey(chunk.Value.Index))
                     {
-                        var terrainChunk = chunks[chunk.Value.index];
+                        var terrainChunk = chunks[chunk.Value.Index];
 
                         if (terrainChunk.refresh && !terrainChunk.isLoading)
                         {
