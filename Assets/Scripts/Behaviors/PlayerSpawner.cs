@@ -23,7 +23,7 @@ namespace VoxelWorld.Scripts
 
             if (!playerSpawned)
             {
-                var world = GetComponent<WorldSpawner>().World;
+                var world = GetComponent<WorldSpawner>().world;
 
                 if (world != null)
                 {

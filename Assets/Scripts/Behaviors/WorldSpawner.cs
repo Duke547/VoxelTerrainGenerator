@@ -8,16 +8,16 @@ namespace VoxelWorld.Scripts
     {
         public int size = 250;
 
-        public World World { get; private set; }
+        public World world { get; private set; }
 
         void Start()
         {
-            World = WorldGenerator.Generate(size);
+            world = WorldGenerator.Generate(size);
             
             var terrainLoader = GetComponent<TerrainLoader>();
-            terrainLoader.world = World;
+            terrainLoader.world = world;
             
-            terrainLoader.LoadChunk(World.PlayerSpawn);
+            terrainLoader.LoadChunk(world.PlayerSpawn);
         }
     }
 }
