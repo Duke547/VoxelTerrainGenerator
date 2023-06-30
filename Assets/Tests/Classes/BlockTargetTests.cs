@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using UnityEngine;
-using VoxelWorld.Classes;
-using VoxelWorld.Scripts;
+using VoxelWorld.MonoBehaviors;
 
 namespace VoxelWorld.Testing
 {

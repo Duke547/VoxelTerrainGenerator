@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
-using VoxelWorld.Classes;
 
 using static System.Math;
 
-namespace VoxelWorld.Scripts
+namespace VoxelWorld.MonoBehaviors
 {
     public sealed class TerrainLoader : MonoBehaviour
     {

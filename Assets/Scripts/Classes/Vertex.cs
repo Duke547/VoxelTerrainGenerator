@@ -1,7 +1,8 @@
 ﻿using System.IO;
 using UnityEngine;
+using VoxelWorld.Extentions;
 
-namespace VoxelWorld.Classes
+namespace VoxelWorld
 {
     public record Vertex
     {

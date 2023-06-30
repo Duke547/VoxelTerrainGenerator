@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace VoxelWorld.Scripts
+namespace VoxelWorld.MonoBehaviors
 {
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour

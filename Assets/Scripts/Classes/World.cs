@@ -1,7 +1,6 @@
-﻿//using Unity.Profiling;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace VoxelWorld.Classes
+namespace VoxelWorld
 {
     public class World
     {

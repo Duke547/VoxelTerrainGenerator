@@ -2,8 +2,9 @@ using System.IO;
 using System.Text;
 using NUnit.Framework;
 using UnityEngine;
+using VoxelWorld.Extentions;
 
-namespace VoxelWorld.Testing
+namespace VoxelWorld.Testing.Extensions
 {
     public class BinaryReaderWriterExtTests
     {

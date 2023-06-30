@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.TestTools;
 
-namespace VoxelWorld.Scripts
+namespace VoxelWorld.MonoBehaviors
 {
     [ExcludeFromCoverage]
     [RequireComponent(typeof(PlayerController))]

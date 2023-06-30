@@ -1,7 +1,7 @@
 using UnityEngine;
 using static UnityEngine.Vector3;
 
-namespace VoxelWorld.Classes
+namespace VoxelWorld
 {
     public static class TerrainMeshGenerator
     {

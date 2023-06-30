@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using UnityEngine;
 
-namespace VoxelWorld
+namespace VoxelWorld.Extentions
 {
     public static class BinaryReaderWriterExt
     {

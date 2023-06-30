@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace VoxelWorld.Scripts
+namespace VoxelWorld.MonoBehaviors
 {
     [RequireComponent(typeof(WorldSpawner))]
     public class PlayerSpawner : MonoBehaviour

@@ -1,4 +1,4 @@
-namespace VoxelWorld.Classes
+namespace VoxelWorld
 {
     public record BlockType
     {

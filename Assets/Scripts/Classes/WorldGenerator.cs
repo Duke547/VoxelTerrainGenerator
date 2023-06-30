@@ -1,7 +1,7 @@
 //using Unity.Profiling;
 using UnityEngine;
 
-namespace VoxelWorld.Classes
+namespace VoxelWorld
 {
     public static class WorldGenerator
     {

@@ -3,9 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
-using VoxelWorld.Classes;
 
-namespace VoxelWorld.Scripts
+namespace VoxelWorld.MonoBehaviors
 {
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
     public class TerrainChunk : MonoBehaviour

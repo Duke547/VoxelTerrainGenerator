@@ -1,7 +1,6 @@
 using UnityEngine;
-using VoxelWorld.Classes;
 
-namespace VoxelWorld.Scripts
+namespace VoxelWorld.MonoBehaviors
 {
     [RequireComponent(typeof(TerrainLoader))]
     public class WorldSpawner : MonoBehaviour

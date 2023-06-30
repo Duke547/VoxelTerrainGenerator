@@ -1,9 +1,8 @@
 //using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.UI;
-using VoxelWorld.Classes;
 
-namespace VoxelWorld.Scripts.UI
+namespace VoxelWorld.MonoBehaviors.UI
 {
     public class MainMenu : MonoBehaviour
     {

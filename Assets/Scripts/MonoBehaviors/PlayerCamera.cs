@@ -1,7 +1,6 @@
 using UnityEngine;
-using VoxelWorld.Classes;
 
-namespace VoxelWorld.Scripts
+namespace VoxelWorld.MonoBehaviors
 {
     [RequireComponent(typeof(Camera))]
     public class PlayerCamera : MonoBehaviour

@@ -3,7 +3,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace VoxelWorld.Classes
+namespace VoxelWorld
 {
     public class MeshCache
     {

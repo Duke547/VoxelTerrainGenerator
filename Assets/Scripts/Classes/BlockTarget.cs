@@ -1,7 +1,7 @@
 using UnityEngine;
-using VoxelWorld.Scripts;
+using VoxelWorld.MonoBehaviors;
 
-namespace VoxelWorld.Classes
+namespace VoxelWorld
 {
     public class BlockTarget
     {

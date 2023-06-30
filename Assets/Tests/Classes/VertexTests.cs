@@ -2,7 +2,6 @@ using System.IO;
 using System.Text;
 using NUnit.Framework;
 using UnityEngine;
-using VoxelWorld.Classes;
 
 namespace VoxelWorld.Testing
 {
