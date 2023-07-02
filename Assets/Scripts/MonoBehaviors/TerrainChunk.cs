@@ -78,7 +78,7 @@ namespace VoxelWorld.MonoBehaviors
 
         public void BreakBlock(Vector3Int position)
         {
-            worldChunk.World.RemoveBlock(position);
+            worldChunk.World.SetBlock(position, "Air");
 
             Refresh();
         }
@@ -87,7 +87,7 @@ namespace VoxelWorld.MonoBehaviors
         {
             if (!Physics.CheckBox(position, new(0.4f, 0.4f, 0.4f)))
             {
-                worldChunk.World.SetBlock(position);
+                worldChunk.World.SetBlock(position, "Dirt");
 
                 Refresh();
             }

@@ -38,11 +38,8 @@ namespace VoxelWorld
         public BlockType GetBlock(int x, int y, int z)
             => GetBlock(new(x, y, z));
 
-        public void SetBlock(Vector3Int position)
-            => Blocks[position.x, position.y, position.z] = (byte)BlockType.GetBlockTypeID("Dirt");
-
-        public void RemoveBlock(Vector3Int position)
-            => Blocks[position.x, position.y, position.z] = (byte)BlockType.GetBlockTypeID("Air");
+        public void SetBlock(Vector3Int position, string blockTypeName)
+            => Blocks[position.x, position.y, position.z] = (byte)BlockType.GetBlockTypeID(blockTypeName);
 
         public Vector3 FindSurface(int x, int z)
         {

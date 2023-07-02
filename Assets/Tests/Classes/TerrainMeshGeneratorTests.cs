@@ -9,18 +9,19 @@ namespace VoxelWorld.Testing
         [Test]
         public void GenerateChunkMesh_Test()
         {
-            var blocks = new byte[4,4,4];
-            var world  = new World(blocks);
-            var chunk  = new WorldChunk(world, Vector2Int.zero, 3);
-            var center = new Vector3Int(1, 1, 1);
+            var blocks    = new byte[4,4,4];
+            var world     = new World(blocks);
+            var chunk     = new WorldChunk(world, Vector2Int.zero, 3);
+            var center    = new Vector3Int(1, 1, 1);
+            var blockType = "Dirt";
 
-            world.SetBlock(center);
-            world.SetBlock(center + Vector3Int.up     );
-            world.SetBlock(center + Vector3Int.down   );
-            world.SetBlock(center + Vector3Int.left   );
-            world.SetBlock(center + Vector3Int.right  );
-            world.SetBlock(center + Vector3Int.forward);
-            world.SetBlock(center + Vector3Int.back   );
+            world.SetBlock(center,                      blockType);
+            world.SetBlock(center + Vector3Int.up,      blockType);
+            world.SetBlock(center + Vector3Int.down,    blockType);
+            world.SetBlock(center + Vector3Int.left,    blockType);
+            world.SetBlock(center + Vector3Int.right,   blockType);
+            world.SetBlock(center + Vector3Int.forward, blockType);
+            world.SetBlock(center + Vector3Int.back,    blockType);
 
             var mesh = TerrainMeshGenerator.GenerateChunkMesh(chunk);
 
